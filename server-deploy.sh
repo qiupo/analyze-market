@@ -137,32 +137,7 @@ install_talib_from_source() {
     print_message "TA-Lib安装完成"
 }
 
-# 安装Docker
-install_docker() {
-    print_message "安装Docker..."
-    
-    if command -v docker &> /dev/null; then
-        print_message "Docker已安装"
-        return
-    fi
-    
-    # 安装Docker
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sudo sh get-docker.sh
-    
-    # 启动Docker服务
-    sudo systemctl start docker
-    sudo systemctl enable docker
-    
-    # 添加用户到docker组
-    sudo usermod -aG docker $USER
-    
-    # 安装Docker Compose
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-    
-    print_message "Docker安装完成，请重新登录以应用用户组权限"
-}
+
 
 # 配置防火墙
 configure_firewall() {
@@ -263,10 +238,7 @@ show_deployment_result() {
     echo "  查看状态: sudo systemctl status stock-analyzer"
     echo "  查看日志: sudo journalctl -u stock-analyzer -f"
     echo ""
-    echo -e "${BLUE}Docker管理:${NC}"
-    echo "  启动Docker: docker-compose up -d"
-    echo "  停止Docker: docker-compose down"
-    echo "  查看日志: docker-compose logs -f"
+
     echo ""
     echo -e "${BLUE}TA-Lib验证:${NC}"
     echo "  验证安装: python3 -c 'import talib; print(\"TA-Lib版本:\", talib.__version__)'"
@@ -295,8 +267,7 @@ main() {
     # 安装TA-Lib
     install_talib_from_source
     
-    # 安装Docker
-    install_docker
+
     
     # 配置防火墙
     configure_firewall

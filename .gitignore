@@ -97,8 +97,7 @@ dmypy.json
 .env.test.local
 .env.production.local
 
-# Docker
-.dockerignore
+
 
 # Backup files
 *.bak
