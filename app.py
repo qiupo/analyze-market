@@ -416,7 +416,7 @@ def main():
                         st.success(f"""
 **▶ 个性化操作建议：**
 
-{action_color} **{decision['action']}**
+{action_color} **{decision['decision']}**
 
 📊 **仓位调整：** {position_change}
 
@@ -428,12 +428,12 @@ def main():
                         """)
                     else:
                         # 无持仓的建仓建议
-                        action_color = "🟢" if "建仓" in decision['action'] else "⚠️" if "试单" in decision['action'] else "🔴"
+                        action_color = "🟢" if "建仓" in decision['decision'] else "⚠️" if "试单" in decision['decision'] else "🔴"
                         
                         st.success(f"""
 **▶ 建仓建议：**
                         
-{action_color} **{decision['action']}** (建议仓位: {decision['position_ratio']*100:.0f}%)
+{action_color} **{decision['decision']}** (建议仓位: {decision['position_ratio']*100:.0f}%)
 
 🎯 **目标价位：** ￥{decision['target_price']:.2f} ({((decision['target_price']/latest_price-1)*100):+.1f}%)
 
@@ -624,7 +624,7 @@ def main():
 信号强度：{signal_result['signal_count']}/{signal_result['total_signals']}
 
 📈 操作建议：
-{decision['action']}
+{decision['decision']}
 置信度：{decision['confidence']}
 目标价位：￥{decision['target_price']:.2f}
 止损价位：￥{decision['stop_loss']:.2f}

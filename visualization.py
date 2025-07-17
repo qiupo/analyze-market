@@ -220,7 +220,7 @@ class StockVisualizer:
                 signal_icons.append(f"{icon} 市场环境：{signal['description']}")
         
         # 操作建议颜色
-        action_color = "🟢" if "买入" in decision['action'] else "⚠️" if "试单" in decision['action'] else "🔴"
+        action_color = "🟢" if "买入" in decision['decision'] else "⚠️" if "试单" in decision['decision'] else "🔴"
         
         # 生成卡片
         card = f"""
@@ -243,7 +243,7 @@ class StockVisualizer:
         
         card += f"""
 **▶ 操作建议：**
-  {action_color} **{decision['action']}** (建议仓位: {decision['position_ratio']*100:.0f}%)
+  {action_color} **{decision['decision']}** (建议仓位: {decision['position_ratio']*100:.0f}%)
   🎯 目标价位：￥{decision['target_price']:.2f} ({((decision['target_price']/latest_price-1)*100):+.1f}%)
   ⛔ 止损价位：￥{decision['stop_loss']:.2f} ({((decision['stop_loss']/latest_price-1)*100):+.1f}%)
   ⏰ 建议持有：{decision['holding_period']}

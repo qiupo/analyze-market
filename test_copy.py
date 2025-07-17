@@ -73,7 +73,7 @@ def test_copy_function():
 信号强度：{signal_result['signal_count']}/{signal_result['total_signals']}
 
 📈 操作建议：
-{decision['action']}
+{decision['decision']}
 置信度：{decision['confidence']}
 目标价位：￥{decision['target_price']:.2f}
 止损价位：￥{decision['stop_loss']:.2f}

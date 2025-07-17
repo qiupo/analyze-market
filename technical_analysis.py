@@ -269,6 +269,7 @@ class TechnicalAnalyzer:
         return {
             'signals': signals,
             'signal_count': signal_count,
+            'total_signals': 6,  # 六维信号验证
             'overall_score': overall_score,
             'recommendation': self._get_recommendation(signal_count, overall_score)
         }
@@ -378,12 +379,40 @@ class TechnicalAnalyzer:
         # 风险提示
         risk_warnings = self._generate_risk_warnings(latest)
         
+        # 计算目标价位和止损价位
+        current_price = latest['close']
+        atr = latest['ATR'] if not pd.isna(latest['ATR']) else current_price * 0.02
+        
+        # 根据信号强度确定目标涨幅
+        if signal_count >= 5:
+            target_multiplier = 1.15  # 15%目标涨幅
+            holding_period = '5-15天'
+        elif signal_count >= 4:
+            target_multiplier = 1.10  # 10%目标涨幅
+            holding_period = '3-7天'
+        elif signal_count >= 3:
+            target_multiplier = 1.06  # 6%目标涨幅
+            holding_period = '1-3天'
+        elif signal_count >= 2:
+            target_multiplier = 1.03  # 3%目标涨幅
+            holding_period = '1-2天'
+        else:
+            target_multiplier = 1.00  # 无涨幅预期
+            holding_period = '观望'
+        
+        target_price = current_price * target_multiplier
+        stop_loss = current_price * 0.95  # 5%止损
+        
         return {
             'decision': base_decision,
             'confidence': confidence,
             'signal_count': signal_count,
             'overall_score': overall_score,
             'position_suggestion': position_suggestion,
+            'position_ratio': position_suggestion['suggested_position'] / 100,  # 转换为0-1之间的小数
+            'target_price': round(target_price, 2),
+            'stop_loss': round(stop_loss, 2),
+            'holding_period': holding_period,
             'risk_warnings': risk_warnings,
             'technical_reasons': self._get_technical_reasons(signal_result, latest),
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -414,6 +443,28 @@ class TechnicalAnalyzer:
             decision = '观望'
             reason = '技术面中性，建议观望'
         
+        # 根据持仓决策计算目标价位和止损价位
+        if decision == '加仓':
+            target_price = current_price * 1.12  # 12%目标涨幅
+            stop_loss = cost_price * 0.93  # 基于成本价7%止损
+            holding_period = '3-10天'
+        elif decision == '持有':
+            target_price = current_price * 1.08  # 8%目标涨幅
+            stop_loss = cost_price * 0.95  # 基于成本价5%止损
+            holding_period = '2-7天'
+        elif decision == '减仓':
+            target_price = current_price * 1.03  # 3%目标涨幅
+            stop_loss = cost_price * 0.97  # 基于成本价3%止损
+            holding_period = '1-3天'
+        elif decision == '止损':
+            target_price = current_price  # 无涨幅预期
+            stop_loss = current_price * 0.98  # 紧急止损
+            holding_period = '立即执行'
+        else:  # 观望
+            target_price = current_price * 1.05  # 5%目标涨幅
+            stop_loss = current_price * 0.95  # 5%止损
+            holding_period = '观望等待'
+        
         return {
             'decision': decision,
             'reason': reason,
@@ -422,6 +473,10 @@ class TechnicalAnalyzer:
             'position_size': position_size,
             'current_price': current_price,
             'cost_price': cost_price,
+            'position_ratio': 0.5 if decision in ['加仓', '持有'] else -0.3 if decision == '减仓' else -1.0 if decision == '止损' else 0.0,  # 根据决策设置仓位比例
+            'target_price': round(target_price, 2),
+            'stop_loss': round(stop_loss, 2),
+            'holding_period': holding_period,
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
     
@@ -509,10 +564,47 @@ class TechnicalAnalyzer:
     def calculate_position_management(self, decision: Dict, latest_price: float) -> Dict:
         """仓位管理建议"""
         suggested_position = decision.get('position_suggestion', {}).get('suggested_position', 0)
+        signal_count = decision.get('signal_count', 0)
+        
+        # 根据信号强度调整仓位分配策略
+        if signal_count >= 5:
+            # 强烈信号：激进配置
+            bottom_position = 0.6    # 60%底仓
+            breakout_add = 0.25      # 25%突破加仓
+            pullback_add = 0.10      # 10%回调补仓
+            flexible_trade = 0.05    # 5%机动T+0
+        elif signal_count >= 4:
+            # 较强信号：标准配置
+            bottom_position = 0.5    # 50%底仓
+            breakout_add = 0.25      # 25%突破加仓
+            pullback_add = 0.15      # 15%回调补仓
+            flexible_trade = 0.10    # 10%机动T+0
+        elif signal_count >= 3:
+            # 中等信号：保守配置
+            bottom_position = 0.4    # 40%底仓
+            breakout_add = 0.30      # 30%突破加仓
+            pullback_add = 0.20      # 20%回调补仓
+            flexible_trade = 0.10    # 10%机动T+0
+        elif signal_count >= 2:
+            # 弱信号：谨慎配置
+            bottom_position = 0.3    # 30%底仓
+            breakout_add = 0.35      # 35%突破加仓
+            pullback_add = 0.25      # 25%回调补仓
+            flexible_trade = 0.10    # 10%机动T+0
+        else:
+            # 无信号：观望配置
+            bottom_position = 0.0    # 0%底仓
+            breakout_add = 0.0       # 0%突破加仓
+            pullback_add = 0.0       # 0%回调补仓
+            flexible_trade = 0.0     # 0%机动T+0
         
         return {
             'suggested_position': suggested_position,
             'position_strategy': '分批建仓' if suggested_position > 50 else '一次性建仓',
+            'bottom_position': bottom_position,
+            'breakout_add': breakout_add,
+            'pullback_add': pullback_add,
+            'flexible_trade': flexible_trade,
             'stop_loss': latest_price * 0.95,  # 5%止损
             'take_profit': latest_price * 1.15,  # 15%止盈
             'risk_management': '建议设置止损止盈，控制单笔交易风险'
@@ -526,11 +618,28 @@ class TechnicalAnalyzer:
         stop_loss = latest_price - (atr * 2)  # 2倍ATR止损
         take_profit = latest_price + (atr * 3)  # 3倍ATR止盈
         
+        # 阶梯止盈
+        step_profit = {
+            '15%': round(latest_price * 1.15, 2),
+            '25%': round(latest_price * 1.25, 2),
+            '40%': round(latest_price * 1.40, 2)
+        }
+        
+        # 移动止损（基于7%回撤）
+        trailing_stop = round(latest_price * 0.93, 2)
+        
+        # 紧急止损（基于2倍ATR）
+        emergency_stop = round(latest_price - (atr * 2), 2)
+        
         return {
             'stop_loss': round(stop_loss, 2),
             'take_profit': round(take_profit, 2),
             'stop_loss_pct': round(((stop_loss - latest_price) / latest_price) * 100, 2),
             'take_profit_pct': round(((take_profit - latest_price) / latest_price) * 100, 2),
+            'step_profit': step_profit,
+            'trailing_stop': trailing_stop,
+            'emergency_stop': emergency_stop,
+            'time_stop': 5,  # 5日时间止损
             'atr': round(atr, 2),
             'method': '基于ATR动态计算'
         } 
