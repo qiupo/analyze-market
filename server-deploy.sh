@@ -74,7 +74,9 @@ install_dependencies() {
             build-essential \
             libssl-dev \
             libffi-dev \
-            python3-dev
+            python3-dev \
+            libta-lib-dev \
+            pkg-config
     elif command -v yum &> /dev/null; then
         sudo yum install -y \
             python3 \
@@ -85,7 +87,9 @@ install_dependencies() {
             gcc \
             openssl-devel \
             libffi-devel \
-            python3-devel
+            python3-devel \
+            ta-lib-devel \
+            pkgconfig
     elif command -v dnf &> /dev/null; then
         sudo dnf install -y \
             python3 \
@@ -96,8 +100,41 @@ install_dependencies() {
             gcc \
             openssl-devel \
             libffi-devel \
-            python3-devel
+            python3-devel \
+            ta-lib-devel \
+            pkgconfig
     fi
+}
+
+# 安装TA-Lib（如果系统包管理器没有提供）
+install_talib_from_source() {
+    print_message "检查TA-Lib安装..."
+    
+    if python3 -c "import talib" 2>/dev/null; then
+        print_message "TA-Lib已安装"
+        return
+    fi
+    
+    print_message "从源码安装TA-Lib..."
+    
+    # 下载并编译TA-Lib
+    cd /tmp
+    wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+    tar -xzf ta-lib-0.4.0-src.tar.gz
+    cd ta-lib/
+    ./configure --prefix=/usr/local
+    make
+    sudo make install
+    
+    # 更新库路径
+    echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+    export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+    
+    # 清理临时文件
+    cd /
+    rm -rf /tmp/ta-lib*
+    
+    print_message "TA-Lib安装完成"
 }
 
 # 安装Docker
@@ -231,6 +268,9 @@ show_deployment_result() {
     echo "  停止Docker: docker-compose down"
     echo "  查看日志: docker-compose logs -f"
     echo ""
+    echo -e "${BLUE}TA-Lib验证:${NC}"
+    echo "  验证安装: python3 -c 'import talib; print(\"TA-Lib版本:\", talib.__version__)'"
+    echo ""
     echo -e "${BLUE}防火墙状态:${NC}"
     if command -v ufw &> /dev/null; then
         sudo ufw status
@@ -251,6 +291,9 @@ main() {
     
     # 安装依赖
     install_dependencies
+    
+    # 安装TA-Lib
+    install_talib_from_source
     
     # 安装Docker
     install_docker

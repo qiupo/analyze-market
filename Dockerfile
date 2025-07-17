@@ -11,10 +11,13 @@ ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
 ENV STREAMLIT_SERVER_HEADLESS=true
 ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
 
-# 安装系统依赖
+# 安装系统依赖（包括TA-Lib依赖）
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    wget \
+    build-essential \
+    libta-lib-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # 复制依赖文件

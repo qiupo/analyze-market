@@ -2,7 +2,17 @@
 
 ## 概述
 
-本指南提供了多种部署方式，从简单的本地部署到生产环境的服务器部署。
+本指南提供了多种部署方式，从简单的本地部署到生产环境的服务器部署。项目已集成TA-Lib专业技术分析库，提供更准确的技术指标计算。
+
+## 技术栈
+
+- **前端**: Streamlit
+- **数据获取**: AKShare
+- **技术分析**: TA-Lib (专业指标库)
+- **数据处理**: Pandas, NumPy
+- **可视化**: Plotly
+- **容器化**: Docker & Docker Compose
+- **反向代理**: Nginx
 
 ## 部署方式
 
@@ -52,7 +62,20 @@ source venv/bin/activate  # Linux/macOS
 # 或
 venv\Scripts\activate     # Windows
 
-# 安装依赖
+# 安装TA-Lib依赖（重要！）
+# macOS:
+brew install ta-lib
+pip install TA-Lib
+
+# Ubuntu/Debian:
+sudo apt-get install libta-lib-dev
+pip install TA-Lib
+
+# CentOS/RHEL:
+sudo yum install ta-lib-devel
+pip install TA-Lib
+
+# 安装其他依赖
 pip install -r requirements.txt
 
 # 启动应用
@@ -72,12 +95,60 @@ chmod +x server-deploy.sh
 - Python 3.8+
 - 2GB RAM
 - 1GB 磁盘空间
+- TA-Lib C库支持
 
 ### 推荐配置
 - Python 3.9+
 - 4GB RAM
 - 5GB 磁盘空间
 - Docker 20.10+
+- TA-Lib 0.4.28+
+
+## TA-Lib安装说明
+
+### 为什么需要TA-Lib？
+TA-Lib是专业的技术分析库，提供150+种技术指标，计算精度高，性能优异。
+
+### 安装方法
+
+#### 1. 使用系统包管理器（推荐）
+```bash
+# Ubuntu/Debian
+sudo apt-get install libta-lib-dev
+pip install TA-Lib
+
+# CentOS/RHEL
+sudo yum install ta-lib-devel
+pip install TA-Lib
+
+# macOS
+brew install ta-lib
+pip install TA-Lib
+```
+
+#### 2. 从源码编译
+```bash
+# 下载源码
+wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+tar -xzf ta-lib-0.4.0-src.tar.gz
+cd ta-lib/
+
+# 编译安装
+./configure --prefix=/usr/local
+make
+sudo make install
+
+# 安装Python包
+pip install TA-Lib
+```
+
+#### 3. Docker方式（自动安装）
+Docker镜像已预装TA-Lib，无需手动安装。
+
+### 验证安装
+```bash
+python3 -c "import talib; print('TA-Lib版本:', talib.__version__)"
+```
 
 ## 端口配置
 
@@ -93,6 +164,31 @@ chmod +x server-deploy.sh
 | STREAMLIT_SERVER_ADDRESS | 0.0.0.0 | 服务监听地址 |
 | STREAMLIT_SERVER_HEADLESS | true | 无头模式 |
 | STREAMLIT_BROWSER_GATHER_USAGE_STATS | false | 禁用使用统计 |
+
+## 技术指标说明
+
+### 已集成的TA-Lib指标
+1. **趋势指标**
+   - SMA/EMA (简单/指数移动平均)
+   - TRIX (三重指数移动平均)
+   - ADX (平均趋向指数)
+   - SAR (抛物线转向)
+
+2. **动量指标**
+   - RSI (相对强弱指数)
+   - CCI (商品通道指数)
+   - WILLR (威廉指标)
+   - MOM (动量指标)
+   - ROC (变动率指标)
+
+3. **波动指标**
+   - ATR (平均真实波幅)
+   - BBANDS (布林带)
+   - STOCH (随机指标)
+
+4. **成交量指标**
+   - AD (累积/派发线)
+   - ADOSC (震荡指标)
 
 ## 服务管理
 
@@ -161,7 +257,17 @@ tar -czf stock-analyzer-backup-$(date +%Y%m%d).tar.gz \
 
 ### 常见问题
 
-1. **端口被占用**
+1. **TA-Lib安装失败**
+   ```bash
+   # 检查系统依赖
+   sudo apt-get install build-essential libta-lib-dev pkg-config
+   
+   # 重新安装
+   pip uninstall TA-Lib
+   pip install TA-Lib --no-cache-dir
+   ```
+
+2. **端口被占用**
    ```bash
    # 查看端口占用
    netstat -tulpn | grep 8501
@@ -170,7 +276,7 @@ tar -czf stock-analyzer-backup-$(date +%Y%m%d).tar.gz \
    sudo kill -9 <PID>
    ```
 
-2. **Docker权限问题**
+3. **Docker权限问题**
    ```bash
    # 添加用户到docker组
    sudo usermod -aG docker $USER
@@ -179,7 +285,7 @@ tar -czf stock-analyzer-backup-$(date +%Y%m%d).tar.gz \
    logout
    ```
 
-3. **依赖安装失败**
+4. **依赖安装失败**
    ```bash
    # 升级pip
    pip install --upgrade pip
@@ -191,7 +297,7 @@ tar -czf stock-analyzer-backup-$(date +%Y%m%d).tar.gz \
    pip install -r requirements.txt --force-reinstall
    ```
 
-4. **内存不足**
+5. **内存不足**
    ```bash
    # 增加swap空间
    sudo fallocate -l 2G /swapfile
@@ -210,9 +316,9 @@ tar -czf stock-analyzer-backup-$(date +%Y%m%d).tar.gz \
    - 使用Nginx反向代理
    - 配置多个应用实例
 
-3. **数据库优化**
-   - 使用连接池
-   - 优化查询语句
+3. **TA-Lib优化**
+   - 使用向量化计算
+   - 批量处理数据
 
 ## 安全配置
 
@@ -261,13 +367,23 @@ docker-compose build --no-cache
 docker-compose up -d
 ```
 
+### TA-Lib更新
+```bash
+# 更新TA-Lib
+pip install --upgrade TA-Lib
+
+# 验证更新
+python3 -c "import talib; print('TA-Lib版本:', talib.__version__)"
+```
+
 ## 联系支持
 
 如遇到部署问题，请检查：
 1. 系统要求是否满足
-2. 网络连接是否正常
-3. 端口是否被占用
-4. 日志文件中的错误信息
+2. TA-Lib是否正确安装
+3. 网络连接是否正常
+4. 端口是否被占用
+5. 日志文件中的错误信息
 
 ---
 
