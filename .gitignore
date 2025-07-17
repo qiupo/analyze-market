@@ -27,6 +27,7 @@ env/
 ENV/
 env.bak/
 venv.bak/
+portable_env/
 
 # IDE
 .vscode/
@@ -97,8 +98,29 @@ dmypy.json
 .env.test.local
 .env.production.local
 
-
-
 # Backup files
 *.bak
-*.backup 
+*.backup
+
+# 打包相关文件（排除生成的文件，保留源码）
+# 排除打包生成的文件
+*.zip
+*.tar.gz
+*.exe
+BandMasterPro
+BandMaster-Pro-*
+
+# 排除Docker生成的文件
+Dockerfile
+docker-compose.yml
+.dockerignore
+docker_build.*
+docker_run.*
+Docker_README.md
+
+# 排除便携式环境
+portable_env/
+启动应用.*
+
+# 排除临时安装文件
+install.py 
