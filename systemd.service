@@ -1,0 +1,15 @@
+[Unit]
+Description=Stock Analyzer Application
+After=network.target
+
+[Service]
+Type=simple
+User=stock-analyzer
+WorkingDirectory=/opt/stock-analyzer
+Environment=PATH=/opt/stock-analyzer/venv/bin
+ExecStart=/opt/stock-analyzer/venv/bin/python start.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target 
