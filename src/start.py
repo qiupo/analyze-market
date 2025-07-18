@@ -86,8 +86,21 @@ def start_application():
         print("🛑 停止服务: 按 Ctrl+C")
         print("=" * 50)
         
-        # 启动应用
-        subprocess.run(cmd)
+        # 直接导入并运行app.py，而不是启动子进程
+        import streamlit.web.cli as stcli
+        import sys
+        
+        # 设置命令行参数
+        sys.argv = [
+            'streamlit', 'run', 'src/app.py',
+            '--server.port', '8501',
+            '--server.address', 'localhost',
+            '--server.headless', 'false',
+            '--browser.gatherUsageStats', 'false'
+        ]
+        
+        # 直接运行streamlit
+        stcli.main()
         
     except KeyboardInterrupt:
         print("\n👋 应用已停止")
