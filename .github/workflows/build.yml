@@ -426,11 +426,28 @@ jobs:
         echo "" >> dist/README-macOS.md
         echo "**免责声明**: 本工具仅供学习研究使用，不构成投资建议。投资有风险，决策需谨慎。" >> dist/README-macOS.md
     
+    - name: Create zip package (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
+        cd dist
+        powershell Compress-Archive -Path * -DestinationPath ../BandMasterPro-Windows.zip
+        cd ..
+    
+    - name: Create zip package (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd dist
+        zip -r ../BandMasterPro-macOS.zip *
+        cd ..
+    
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: BandMasterPro-${{ matrix.os }}
-        path: dist/
+        path: |
+          dist/
+          BandMasterPro-${{ matrix.os == 'windows-latest' && 'Windows' || 'macOS' }}.zip
         retention-days: 30
 
   release:
@@ -451,25 +468,21 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          artifacts/BandMasterPro-windows-latest/BandMasterPro.exe
-          artifacts/BandMasterPro-windows-latest/启动应用.bat
-          artifacts/BandMasterPro-windows-latest/README-Windows.md
-          artifacts/BandMasterPro-macos-latest/BandMasterPro
-          artifacts/BandMasterPro-macos-latest/启动应用.sh
-          artifacts/BandMasterPro-macos-latest/README-macOS.md
+          artifacts/BandMasterPro-windows-latest/BandMasterPro-Windows.zip
+          artifacts/BandMasterPro-macos-latest/BandMasterPro-macOS.zip
         tag_name: v${{ github.run_number }}
         name: Release v${{ github.run_number }}
         body: |
           ## 🎉 BandMaster Pro 跨平台发布
           
-          本次发布包含以下平台的可执行文件：
+          本次发布包含以下平台的完整安装包：
           
-          - **Windows**: BandMasterPro.exe + 启动应用.bat + README-Windows.md
-          - **macOS**: BandMasterPro + 启动应用.sh + README-macOS.md
+          - **Windows**: BandMasterPro-Windows.zip
+          - **macOS**: BandMasterPro-macOS.zip
           
           ### 📦 使用说明
           
-          1. 下载对应平台的压缩包
+          1. 下载对应平台的zip压缩包
           2. 解压到任意目录
           3. 运行启动脚本或直接运行可执行文件
           4. 等待应用启动，浏览器会自动打开
