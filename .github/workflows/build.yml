@@ -52,11 +52,22 @@ jobs:
       run: |
         brew install ta-lib
     
-    - name: Install Python dependencies
+    - name: Install Python dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
       run: |
         python -m pip install --upgrade pip
         pip install numpy pandas streamlit plotly akshare
-        # 安装 TA-Lib 时设置正确的库路径
+        pip install TA-Lib
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Install Python dependencies (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy pandas streamlit plotly akshare
+        # 安装 TA-Lib 时设置正确的库路径 (Linux only)
         if [ "$RUNNER_OS" = "Linux" ]; then
           export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
           export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
