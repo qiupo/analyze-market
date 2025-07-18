@@ -451,8 +451,12 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          artifacts/BandMasterPro-windows-latest/*
-          artifacts/BandMasterPro-macos-latest/*
+          artifacts/BandMasterPro-windows-latest/BandMasterPro.exe
+          artifacts/BandMasterPro-windows-latest/启动应用.bat
+          artifacts/BandMasterPro-windows-latest/README.md
+          artifacts/BandMasterPro-macos-latest/BandMasterPro
+          artifacts/BandMasterPro-macos-latest/启动应用.sh
+          artifacts/BandMasterPro-macos-latest/README.md
         tag_name: v${{ github.run_number }}
         name: Release v${{ github.run_number }}
         body: |
