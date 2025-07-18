@@ -125,10 +125,25 @@ jobs:
         echo '    except KeyboardInterrupt:' >> main.py
         echo '        print("🛑 正在停止应用...")' >> main.py
         echo '        process.terminate()' >> main.py
+        echo '        try:' >> main.py
+        echo '            process.wait(timeout=5)' >> main.py
+        echo '        except subprocess.TimeoutExpired:' >> main.py
+        echo '            process.kill()' >> main.py
         echo '        print("✅ 应用已停止")' >> main.py
+        echo '    except SystemExit:' >> main.py
+        echo '        print("🛑 应用退出...")' >> main.py
+        echo '        process.terminate()' >> main.py
+        echo '        try:' >> main.py
+        echo '            process.wait(timeout=5)' >> main.py
+        echo '        except subprocess.TimeoutExpired:' >> main.py
+        echo '            process.kill()' >> main.py
         echo '    except Exception as e:' >> main.py
         echo '        print(f"❌ 启动失败: {e}")' >> main.py
-        echo '        input("按回车键退出...")' >> main.py
+        echo '        print("按回车键退出...")' >> main.py
+        echo '        try:' >> main.py
+        echo '            input()' >> main.py
+        echo '        except:' >> main.py
+        echo '            pass' >> main.py
         echo '' >> main.py
         echo 'if __name__ == "__main__":' >> main.py
         echo '    main()' >> main.py
@@ -157,7 +172,7 @@ jobs:
         echo echo 正在启动应用... >> dist\启动应用.bat
         echo . >> dist\启动应用.bat
         echo if exist "BandMasterPro.exe" ( >> dist\启动应用.bat
-        echo     start /wait BandMasterPro.exe >> dist\启动应用.bat
+        echo     BandMasterPro.exe >> dist\启动应用.bat
         echo ) else ( >> dist\启动应用.bat
         echo     echo 错误: 找不到 BandMasterPro.exe >> dist\启动应用.bat
         echo     echo 请确保文件在同一目录下 >> dist\启动应用.bat

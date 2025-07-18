@@ -63,11 +63,26 @@ def main():
         except KeyboardInterrupt:
             print("\n🛑 正在停止应用...")
             process.terminate()
+            try:
+                process.wait(timeout=5)  # 等待最多5秒
+            except subprocess.TimeoutExpired:
+                process.kill()  # 强制终止
             print("✅ 应用已停止")
+        except SystemExit:
+            print("\n🛑 应用退出...")
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
             
     except Exception as e:
         print(f"❌ 启动失败: {e}")
-        input("按回车键退出...")
+        print("按回车键退出...")
+        try:
+            input()
+        except:
+            pass
 
 if __name__ == "__main__":
     main() 
