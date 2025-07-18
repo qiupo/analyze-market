@@ -5,8 +5,8 @@
 
 import sys
 import pandas as pd
-from data_fetcher import StockDataFetcher
-from technical_analysis import TechnicalAnalyzer
+from core.data_fetcher import StockDataFetcher
+from core.technical_analysis import TechnicalAnalyzer
 
 def test_copy_function():
     """测试复制功能"""

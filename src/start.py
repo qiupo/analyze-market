@@ -62,7 +62,7 @@ def start_application():
     # 启动应用
     try:
         # 构建启动命令
-        cmd = [sys.executable, '-m', 'streamlit', 'run', 'app.py']
+        cmd = [sys.executable, '-m', 'streamlit', 'run', 'src/app.py']
         
         # 添加配置参数
         cmd.extend([
@@ -106,10 +106,10 @@ def main():
     
     # 检查当前目录
     current_dir = Path.cwd()
-    app_file = current_dir / "app.py"
+    app_file = current_dir / "src" / "app.py"
     
     if not app_file.exists():
-        print("❌ 找不到 app.py 文件")
+        print("❌ 找不到 src/app.py 文件")
         print("请确保在项目根目录下运行此脚本")
         return
     

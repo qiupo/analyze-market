@@ -96,7 +96,7 @@ class TechnicalAnalyzer:
         return df
     
     def identify_band_type(self, data: pd.DataFrame) -> Dict:
-        """识别波段类型 - 基于TA-Lib指标"""
+        """识别波段类型和位置 - 基于TA-Lib指标"""
         latest = data.iloc[-1]
         recent_5 = data.tail(5)
         recent_15 = data.tail(15)
@@ -104,12 +104,21 @@ class TechnicalAnalyzer:
         # 计算价格波动幅度
         price_volatility = data['close'].pct_change().std() * np.sqrt(252)
         
+        # 计算波段位置
+        band_position = self._analyze_band_position(data)
+        
         # 判断波段类型
         band_info = {
             'type': '标准波段',
             'period_range': '5-15天',
             'volatility': price_volatility,
-            'trend_strength': latest['ADX'] if not pd.isna(latest['ADX']) else 20
+            'trend_strength': latest['ADX'] if not pd.isna(latest['ADX']) else 20,
+            'position': band_position['position'],
+            'position_description': band_position['description'],
+            'guidance': band_position['guidance'],
+            'position_percent': band_position['position_percent'],
+            'high_20': band_position['high_20'],
+            'low_20': band_position['low_20']
         }
         
         # 微型波段：短期高波动 + 高成交量
@@ -139,6 +148,65 @@ class TechnicalAnalyzer:
             band_info['period_range'] = '3-7天'
         
         return band_info
+    
+    def _analyze_band_position(self, data: pd.DataFrame) -> Dict:
+        """分析当前在波段中的位置"""
+        latest = data.iloc[-1]
+        recent_10 = data.tail(10)
+        
+        # 计算关键价格水平
+        high_20 = data['high'].rolling(20).max().iloc[-1]
+        low_20 = data['low'].rolling(20).min().iloc[-1]
+        current_price = latest['close']
+        
+        # 计算在20日高低点之间的位置百分比
+        if high_20 != low_20:
+            position_percent = (current_price - low_20) / (high_20 - low_20) * 100
+        else:
+            position_percent = 50
+        
+        # 判断波段位置
+        if position_percent >= 80:
+            position = "波段顶部"
+            description = "价格接近20日高点，处于波段高位"
+            guidance = "注意获利了结，设置止盈位，警惕回调风险"
+        elif position_percent >= 60:
+            position = "波段中上"
+            description = "价格处于波段中上位置，仍有上涨空间"
+            guidance = "可继续持有，关注量能配合，设置移动止损"
+        elif position_percent >= 40:
+            position = "波段中部"
+            description = "价格处于波段中部，方向待确认"
+            guidance = "观望为主，等待明确信号，可小仓位试探"
+        elif position_percent >= 20:
+            position = "波段中下"
+            description = "价格处于波段中下位置，存在反弹机会"
+            guidance = "关注支撑位，可逢低建仓，设置严格止损"
+        else:
+            position = "波段底部"
+            description = "价格接近20日低点，处于波段低位"
+            guidance = "关注超跌反弹，可分批建仓，注意风险控制"
+        
+        # 结合技术指标进一步判断
+        rsi = latest['RSI'] if not pd.isna(latest['RSI']) else 50
+        macd_signal = latest['MACD'] > latest['MACD_signal']
+        
+        # 调整指导建议
+        if position in ["波段顶部", "波段中上"] and rsi > 70:
+            guidance += "，RSI超买，建议减仓"
+        elif position in ["波段底部", "波段中下"] and rsi < 30:
+            guidance += "，RSI超卖，可考虑抄底"
+        elif position == "波段中部" and macd_signal:
+            guidance += "，MACD金叉，可适当加仓"
+        
+        return {
+            'position': position,
+            'description': description,
+            'guidance': guidance,
+            'position_percent': position_percent,
+            'high_20': high_20,
+            'low_20': low_20
+        }
     
     def _check_ma_alignment(self, latest_data) -> bool:
         """检查均线多头排列"""
@@ -328,6 +396,14 @@ class TechnicalAnalyzer:
         elif signal_result['signal_count'] >= 4:
             recommendation = '可加仓'
         
+        # 持仓状态
+        if profit_loss_pct > 0:
+            position_status = '盈利'
+        elif profit_loss_pct < 0:
+            position_status = '亏损'
+        else:
+            position_status = '持平'
+        
         return {
             'profit_loss': profit_loss,
             'profit_loss_pct': profit_loss_pct,
@@ -336,6 +412,7 @@ class TechnicalAnalyzer:
             'risk_level': risk_level,
             'trend_strength': trend_strength,
             'recommendation': recommendation,
+            'position_status': position_status,  # 添加position_status字段
             'technical_signals': {
                 'rsi': latest['RSI'],
                 'adx': latest['ADX'],
@@ -371,7 +448,7 @@ class TechnicalAnalyzer:
         # 考虑持仓情况
         if position_info:
             return self._generate_position_based_decision(signal_count, latest['close'], 
-                                                        latest['ATR'], position_info)
+                                                        latest['ATR'], position_info, signal_result)
         
         # 计算建议仓位
         position_suggestion = self._calculate_position_suggestion(signal_count, overall_score, latest)
@@ -419,7 +496,7 @@ class TechnicalAnalyzer:
         }
     
     def _generate_position_based_decision(self, signal_count: int, latest_price: float, 
-                                        atr: float, position_info: Dict) -> Dict:
+                                        atr: float, position_info: Dict, signal_result: Dict) -> Dict:
         """基于持仓生成决策"""
         current_price = latest_price
         cost_price = position_info['cost_price']
@@ -430,18 +507,23 @@ class TechnicalAnalyzer:
         if signal_count >= 4 and profit_loss_pct < 0:
             decision = '加仓'
             reason = '技术面转好，可逢低加仓'
+            confidence = 75
         elif signal_count <= 2 and profit_loss_pct > 5:
             decision = '减仓'
             reason = '技术面转弱，建议获利了结'
+            confidence = 70
         elif signal_count <= 1 and profit_loss_pct < -3:
             decision = '止损'
             reason = '技术面恶化，建议止损'
+            confidence = 85
         elif signal_count >= 3:
             decision = '持有'
             reason = '技术面良好，继续持有'
+            confidence = 80
         else:
             decision = '观望'
             reason = '技术面中性，建议观望'
+            confidence = 50
         
         # 根据持仓决策计算目标价位和止损价位
         if decision == '加仓':
@@ -465,10 +547,20 @@ class TechnicalAnalyzer:
             stop_loss = current_price * 0.95  # 5%止损
             holding_period = '观望等待'
         
+        # 计算建议仓位
+        position_suggestion = self._calculate_position_suggestion(signal_count, (signal_count / 6) * 100, pd.Series({'ATR': atr, 'close': current_price, 'RSI': 50}))
+        
+        # 生成风险提示
+        risk_warnings = self._generate_risk_warnings(pd.Series({'RSI': 50, 'ADX': 25, 'Volume_Ratio': 1.0, 'close': current_price, 'BB_upper': current_price * 1.05, 'BB_lower': current_price * 0.95}))
+        
+        # 生成技术面理由，传递真实signal_result
+        technical_reasons = self._get_technical_reasons(signal_result, pd.Series({'RSI': 50, 'ADX': 25, 'Volume_Ratio': 1.0, 'close': current_price, 'BB_upper': current_price * 1.05, 'BB_lower': current_price * 0.95}))
+        
         return {
             'decision': decision,
             'reason': reason,
             'signal_count': signal_count,
+            'overall_score': (signal_count / 6) * 100,  # 添加overall_score字段
             'profit_loss_pct': profit_loss_pct,
             'position_size': position_size,
             'current_price': current_price,
@@ -477,6 +569,10 @@ class TechnicalAnalyzer:
             'target_price': round(target_price, 2),
             'stop_loss': round(stop_loss, 2),
             'holding_period': holding_period,
+            'confidence': confidence,
+            'position_suggestion': position_suggestion, # 添加position_suggestion字段
+            'risk_warnings': risk_warnings, # 添加risk_warnings字段
+            'technical_reasons': technical_reasons, # 添加technical_reasons字段
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
     

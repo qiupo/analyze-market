@@ -25,7 +25,7 @@ while true; do
         1)
             echo
             echo "🚀 开始创建便携式包..."
-            python3 portable_package.py
+            python3 build/scripts/portable_package.py
             if [ $? -eq 0 ]; then
                 echo "✅ 便携式包创建完成!"
             else
@@ -36,7 +36,7 @@ while true; do
         2)
             echo
             echo "🚀 开始PyInstaller打包..."
-            python3 build_package.py
+            python3 build/scripts/build_package.py
             if [ $? -eq 0 ]; then
                 echo "✅ PyInstaller打包完成!"
             else
@@ -47,7 +47,7 @@ while true; do
         3)
             echo
             echo "🚀 开始Docker容器化..."
-            python3 docker_package.py
+            python3 build/scripts/docker_package.py
             if [ $? -eq 0 ]; then
                 echo "✅ Docker配置文件创建完成!"
                 echo "💡 请运行 ./docker_build.sh 构建镜像"
@@ -62,7 +62,7 @@ while true; do
             pip3 install -r requirements.txt
             if [ $? -eq 0 ]; then
                 echo "✅ 依赖安装完成，启动应用..."
-                streamlit run app.py
+                python3 run.py
             else
                 echo "❌ 依赖安装失败"
             fi
@@ -71,17 +71,17 @@ while true; do
         5)
             echo
             echo "📋 打开部署指南..."
-            if [ -f "DEPLOYMENT_GUIDE.md" ]; then
+            if [ -f "deploy/docs/DEPLOYMENT_GUIDE.md" ]; then
                 if command -v open &> /dev/null; then
-                    open DEPLOYMENT_GUIDE.md
+                    open deploy/docs/DEPLOYMENT_GUIDE.md
                 elif command -v xdg-open &> /dev/null; then
-                    xdg-open DEPLOYMENT_GUIDE.md
+                    xdg-open deploy/docs/DEPLOYMENT_GUIDE.md
                 else
-                    echo "请手动打开 DEPLOYMENT_GUIDE.md 文件"
+                    echo "请手动打开 deploy/docs/DEPLOYMENT_GUIDE.md 文件"
                 fi
             else
                 echo "❌ 部署指南文件不存在"
-                echo "💡 请先运行 python3 deployment_guide.py 创建指南"
+                echo "💡 请先运行 python3 deploy/scripts/deployment_guide.py 创建指南"
             fi
             read -p "按回车键继续..."
             ;;

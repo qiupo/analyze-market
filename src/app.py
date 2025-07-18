@@ -6,9 +6,9 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # 导入自定义模块
-from data_fetcher import StockDataFetcher
-from technical_analysis import TechnicalAnalyzer
-from visualization import StockVisualizer
+from src.core.data_fetcher import StockDataFetcher
+from src.core.technical_analysis import TechnicalAnalyzer
+from src.core.visualization import StockVisualizer
 
 # 配置页面
 st.set_page_config(
@@ -107,7 +107,8 @@ def analyze_stock_core(data, fund_flow, has_position=False, current_position=0, 
         position_info = {
             'profit_loss_pct': position_analysis['profit_loss_pct'],
             'total_cost': position_analysis['total_cost'],
-            'position_size': current_position
+            'position_size': current_position,
+            'cost_price': cost_price  # 添加缺失的cost_price字段
         }
     
     # 生成交易决策（考虑持仓情况）
@@ -334,156 +335,188 @@ def main():
                 chart = visualizer.create_stock_chart(data_with_indicators, stock_info, signal_result, band_info)
                 st.plotly_chart(chart, use_container_width=True)
                 
-                # 显示分析结果
-                col1, col2 = st.columns([1, 1])
+                # 显示分析结果 - 重新设计布局
+                latest_price = data_with_indicators.iloc[-1]['close']
+                support_level = data_with_indicators['close'].quantile(0.2)
+                resistance_level = data_with_indicators['close'].quantile(0.8)
+                
+                # 第一行：核心决策和波段位置
+                st.markdown("## 🎯 核心分析结果")
+                col1, col2, col3 = st.columns([1, 1, 1])
                 
                 with col1:
-                    st.markdown("## 🎯 操作建议")
-                    
-                    # 使用streamlit原生组件显示操作建议
-                    latest_price = data_with_indicators.iloc[-1]['close']
-                    support_level = data_with_indicators['close'].quantile(0.2)
-                    resistance_level = data_with_indicators['close'].quantile(0.8)
-                    
-                    # 如果有持仓，显示持仓状态
-                    if has_position and position_analysis:
-                        st.info(f"""
-**【持仓状态分析】**
-
-**持仓数量：** {current_position:,}股  
-**成本价格：** ￥{cost_price:.2f}  
-**当前价格：** ￥{latest_price:.2f}  
-**持仓状态：** {position_analysis['position_status']}  
-**风险等级：** {position_analysis['risk_level']}
-                        """)
-                    
-                    # 操作建议卡片
-                    st.info(f"""
-**【波段操作信号卡】**
-                    
-**股票：** {stock_info.get('name', '未知')}  
-**更新时间：** {datetime.now().strftime('%Y-%m-%d %H:%M')}
-                    
-**▶ 波段状态：** {band_info['type']}（预期周期{band_info['period_range']}）
-                    
-**▶ 关键位置：**
-- 支撑位：￥{support_level:.2f}
-- 压力位：￥{resistance_level:.2f}  
-- 当前价：￥{latest_price:.2f}
-                    """)
-                    
-                    # 信号验证状态
-                    st.markdown(f"**▶ 信号验证：** ({signal_result['signal_count']}/{signal_result['total_signals']})")
-                    signals = signal_result['signals']
-                    for key, signal in signals.items():
-                        signal_names = {
-                            'trend_direction': '趋势方向',
-                            'momentum_strength': '动量强度', 
-                            'volume_cooperation': '量能配合',
-                            'fund_verification': '资金验证',
-                            'pattern_confirmation': '形态确认',
-                            'market_environment': '市场环境'
-                        }
-                        icon = "✅" if signal['status'] else "❌"
-                        st.write(f"{icon} **{signal_names.get(key, key)}：** {signal['description']}")
-                    
-                    # 个性化操作建议
-                    if has_position:
-                        # 有持仓的个性化建议
-                        action_colors = {
-                            'hold_and_add': '🟢',
-                            'hold': '🔵', 
-                            'reduce': '🟡',
-                            'add_on_dip': '🟢',
-                            'take_profit': '🟡',
-                            'average_down': '🟠',
-                            'stop_loss': '🔴',
-                            'dollar_cost_average': '🟠',
-                            'patient_hold': '🔵',
-                            'cut_loss': '🔴'
-                        }
-                        
-                        suggestion_type = decision.get('suggestion_type', 'hold')
-                        action_color = action_colors.get(suggestion_type, '🔵')
-                        
-                        if decision['position_ratio'] > 0:
-                            position_change = f"建议加仓 {decision['position_ratio']*100:.0f}%"
-                        elif decision['position_ratio'] < 0:
-                            position_change = f"建议减仓 {abs(decision['position_ratio'])*100:.0f}%" if decision['position_ratio'] > -1 else "建议清仓"
-                        else:
-                            position_change = "维持现有仓位"
-                        
-                        st.success(f"""
-**▶ 个性化操作建议：**
+                    # 操作决策
+                    action_color = "🟢" if "买入" in decision['decision'] or "加仓" in decision['decision'] else "🔴" if "卖出" in decision['decision'] or "止损" in decision['decision'] else "🟡"
+                    st.success(f"""
+**📊 操作决策：**
 
 {action_color} **{decision['decision']}**
+**置信度：** {decision['confidence']}%
+**建议仓位：** {decision['position_ratio']*100:.0f}%
 
-📊 **仓位调整：** {position_change}
-
-🎯 **目标价位：** ￥{decision['target_price']:.2f}
-
-⛔ **止损价位：** ￥{decision['stop_loss']:.2f} (基于成本价)
-
-⏰ **操作周期：** {decision['holding_period']}
-                        """)
-                    else:
-                        # 无持仓的建仓建议
-                        action_color = "🟢" if "建仓" in decision['decision'] else "⚠️" if "试单" in decision['decision'] else "🔴"
-                        
-                        st.success(f"""
-**▶ 建仓建议：**
-                        
-{action_color} **{decision['decision']}** (建议仓位: {decision['position_ratio']*100:.0f}%)
-
-🎯 **目标价位：** ￥{decision['target_price']:.2f} ({((decision['target_price']/latest_price-1)*100):+.1f}%)
-
-⛔ **止损价位：** ￥{decision['stop_loss']:.2f} ({((decision['stop_loss']/latest_price-1)*100):+.1f}%)
-
-⏰ **建议持有：** {decision['holding_period']}
-                        """)
-                    
-                    st.warning("**⚠️ 风险提示：** 本分析基于技术指标，仅供参考，投资有风险，决策需谨慎。")
+**🎯 目标价位：** ￥{decision['target_price']:.2f}
+**⛔ 止损价位：** ￥{decision['stop_loss']:.2f}
+**⏰ 持有周期：** {decision['holding_period']}
+                    """)
                 
                 with col2:
-                    st.markdown("## ⚠️ 风险管理")
-                    
-                    # 仓位分配策略
-                    st.info("""
-**【风险管理看板】**
-                    
-**▶ 仓位分配策略：**
+                    # 波段位置分析
+                    st.info(f"""
+**📈 波段位置分析：**
+
+**当前位置：** {band_info['position']}
+**位置描述：** {band_info['position_description']}
+**指导建议：** {band_info['guidance']}
+
+**波段类型：** {band_info['type']}
+**预期周期：** {band_info['period_range']}
+**位置百分比：** {band_info.get('position_percent', 0):.1f}%
                     """)
+                
+                with col3:
+                    # 信号验证汇总
+                    signal_count = signal_result['signal_count']
+                    total_signals = signal_result['total_signals']
+                    signal_percent = (signal_count / total_signals) * 100
                     
-                    col2_1, col2_2 = st.columns(2)
-                    with col2_1:
-                        st.metric("🏗️ 底仓配置", f"{position_mgmt['bottom_position']*100:.1f}%")
-                        st.metric("📉 回调补仓", f"{position_mgmt['pullback_add']*100:.1f}%")
-                    with col2_2:
-                        st.metric("📈 突破加仓", f"{position_mgmt['breakout_add']*100:.1f}%")
-                        st.metric("🔄 机动T+0", f"{position_mgmt['flexible_trade']*100:.1f}%")
-                    
+                    signal_color = "🟢" if signal_percent >= 80 else "🟡" if signal_percent >= 60 else "🔴"
+                    st.warning(f"""
+**🔍 信号验证汇总：**
+
+{signal_color} **{signal_count}/{total_signals}** ({signal_percent:.0f}%)
+
+**趋势方向：** {'✅' if signal_result['signals']['trend_direction']['status'] else '❌'}
+**动量强度：** {'✅' if signal_result['signals']['momentum_strength']['status'] else '❌'}
+**量能配合：** {'✅' if signal_result['signals']['volume_cooperation']['status'] else '❌'}
+**形态确认：** {'✅' if signal_result['signals']['pattern_confirmation']['status'] else '❌'}
+**市场环境：** {'✅' if signal_result['signals']['market_environment']['status'] else '❌'}
+                    """)
+                
+                # 第二行：持仓信息和风险管理
+                st.markdown("## 💼 持仓管理与风险控制")
+                col4, col5 = st.columns([1, 1])
+                
+                with col4:
+                    # 持仓信息（如果有持仓）
+                    if has_position and position_analysis:
+                        profit_loss_pct = position_analysis['profit_loss_pct']
+                        profit_loss = position_analysis['profit_loss']
+                        
+                        # 自定义盈亏显示颜色
+                        if profit_loss_pct > 0:
+                            delta_display = f"🔴 +{profit_loss_pct:.2f}%"
+                        elif profit_loss_pct < 0:
+                            delta_display = f"🟢 {profit_loss_pct:.2f}%"
+                        else:
+                            delta_display = f"⚪ {profit_loss_pct:.2f}%"
+                        
+                        st.info(f"""
+**📊 持仓状态分析：**
+
+**持仓数量：** {current_position:,}股
+**成本价格：** ￥{cost_price:.2f}
+**当前价格：** ￥{latest_price:.2f}
+**持仓状态：** {position_analysis['position_status']}
+**盈亏情况：** {delta_display} (￥{profit_loss:,.0f})
+**风险等级：** {position_analysis['risk_level']}
+**趋势强度：** {position_analysis['trend_strength']}
+
+**操作建议：**
+根据当前持仓状态和信号强度，建议{position_analysis.get('suggestion', '谨慎操作')}
+                        """)
+                    else:
+                        st.info(f"""
+**📊 持仓状态：**
+暂无持仓信息
+
+**建议操作：**
+根据当前信号强度，建议{decision['position_ratio']*100:.0f}%仓位操作
+目标价位：￥{decision['target_price']:.2f}
+止损价位：￥{decision['stop_loss']:.2f}
+                        """)
+                
+                with col5:
+                    # 风险管理
+                    st.warning(f"""
+**⚠️ 风险控制要点：**
+
+**🎯 关键价位：**
+- 目标价位：￥{decision['target_price']:.2f}
+- 止损价位：￥{decision['stop_loss']:.2f}
+- 移动止损：￥{stop_strategy['trailing_stop']:.2f}
+- 紧急止损：￥{stop_strategy['emergency_stop']:.2f}
+
+**📊 仓位建议：**
+- 建议仓位：{position_mgmt['suggested_position']:.0f}%
+- 底仓配置：{position_mgmt['bottom_position']*100:.0f}%
+- 突破加仓：{position_mgmt['breakout_add']*100:.0f}%
+- 回调补仓：{position_mgmt['pullback_add']*100:.0f}%
+- 机动T+0：{position_mgmt['flexible_trade']*100:.0f}%
+
+**⏰ 时间控制：**
+- 持有周期：{decision['holding_period']}
+- 时间止损：{stop_strategy['time_stop']}日
+- 建议操作：{decision['decision']}
+                    """)
+                
+                # 第三行：技术指标和支撑压力位
+                st.markdown("## 📊 技术指标与关键位置")
+                col6, col7, col8 = st.columns([1, 1, 1])
+                
+                with col6:
+                    # 关键价格位置
+                    st.info(f"""
+**📍 关键价格位置：**
+
+**当前价格：** ￥{latest_price:.2f}
+**支撑位：** ￥{support_level:.2f}
+**压力位：** ￥{resistance_level:.2f}
+**20日高点：** ￥{band_info.get('high_20', 0):.2f}
+**20日低点：** ￥{band_info.get('low_20', 0):.2f}
+
+**价格区间：** ￥{band_info.get('low_20', 0):.2f} - ￥{band_info.get('high_20', 0):.2f}
+
+**位置分析：**
+当前位置在20日区间{band_info.get('position_percent', 0):.1f}%处
+                    """)
+                
+                with col7:
+                    # 主要技术指标
+                    latest = data_with_indicators.iloc[-1]
+                    st.info(f"""
+**📈 主要技术指标：**
+
+**RSI：** {latest['RSI']:.1f}
+**MACD：** {latest['MACD']:.3f}
+**ADX：** {latest['ADX']:.1f}
+**ATR：** {latest['ATR']:.3f}
+**量比：** {latest['Volume_Ratio']:.1f}
+
+**布林带位置：** {((latest['close'] - latest['BB_lower']) / (latest['BB_upper'] - latest['BB_lower']) * 100):.1f}%
+
+**指标解读：**
+RSI {'超买' if latest['RSI'] > 75 else '超卖' if latest['RSI'] < 25 else '正常'}
+MACD {'金叉' if latest['MACD'] > 0 else '死叉'}
+                    """)
+                
+                with col8:
                     # 止盈止损设置
-                    st.info("**▶ 止盈止损设置：**")
-                    
-                    # 阶梯止盈
-                    st.write("**🎯 阶梯止盈：**")
-                    col2_3, col2_4, col2_5 = st.columns(3)
-                    with col2_3:
-                        st.metric("15%收益", f"￥{stop_strategy['step_profit']['15%']:.2f}")
-                    with col2_4:
-                        st.metric("25%收益", f"￥{stop_strategy['step_profit']['25%']:.2f}")
-                    with col2_5:
-                        st.metric("40%收益", f"￥{stop_strategy['step_profit']['40%']:.2f}")
-                    
-                    # 其他止损设置
-                    st.write("**🛡️ 止损策略：**")
-                    col2_6, col2_7 = st.columns(2)
-                    with col2_6:
-                        st.metric("移动止损", f"￥{stop_strategy['trailing_stop']:.2f}")
-                        st.metric("时间止损", f"{stop_strategy['time_stop']}日")
-                    with col2_7:
-                        st.metric("紧急止损", f"￥{stop_strategy['emergency_stop']:.2f}")
-                        # 移除空的metric组件
+                    st.info(f"""
+**🎯 止盈止损设置：**
+
+**阶梯止盈：**
+- 15%收益：￥{stop_strategy['step_profit']['15%']:.2f}
+- 25%收益：￥{stop_strategy['step_profit']['25%']:.2f}
+- 40%收益：￥{stop_strategy['step_profit']['40%']:.2f}
+
+**止损策略：**
+- 移动止损：￥{stop_strategy['trailing_stop']:.2f}
+- 时间止损：{stop_strategy['time_stop']}日
+- 紧急止损：￥{stop_strategy['emergency_stop']:.2f}
+
+**风险提示：**
+严格执行止损，控制单笔损失在5%以内
+                    """)
                 
                 # 详细信号分析
                 st.markdown("## 🔍 详细信号分析")
@@ -606,6 +639,11 @@ def main():
                 
                 # 生成分析结果文本
                 def generate_analysis_text():
+                    # 计算关键价格位置
+                    support_level = data_with_indicators['close'].quantile(0.2)
+                    resistance_level = data_with_indicators['close'].quantile(0.8)
+                    latest = data_with_indicators.iloc[-1]
+                    
                     text = f"""
 📈 智策波段交易助手 - 分析报告
 股票代码：{stock_symbol}
@@ -621,29 +659,59 @@ def main():
 🎯 波段分析：
 波段类型：{band_info['type']}
 预期周期：{band_info['period_range']}
-信号强度：{signal_result['signal_count']}/{signal_result['total_signals']}
+当前位置：{band_info['position']}
+位置描述：{band_info['position_description']}
+指导建议：{band_info['guidance']}
+位置百分比：{band_info.get('position_percent', 0):.1f}%
 
 📈 操作建议：
 {decision['decision']}
-置信度：{decision['confidence']}
+置信度：{decision['confidence']}%
+建议仓位：{decision['position_ratio']*100:.0f}%
 目标价位：￥{decision['target_price']:.2f}
 止损价位：￥{decision['stop_loss']:.2f}
 建议持有：{decision['holding_period']}
 
 💼 仓位管理：
-底仓配置：{position_mgmt['bottom_position']*100:.1f}%
-回调补仓：{position_mgmt['pullback_add']*100:.1f}%
-突破加仓：{position_mgmt['breakout_add']*100:.1f}%
-机动T+0：{position_mgmt['flexible_trade']*100:.1f}%
+建议仓位：{position_mgmt['suggested_position']:.0f}%
+底仓配置：{position_mgmt['bottom_position']*100:.0f}%
+回调补仓：{position_mgmt['pullback_add']*100:.0f}%
+突破加仓：{position_mgmt['breakout_add']*100:.0f}%
+机动T+0：{position_mgmt['flexible_trade']*100:.0f}%
 
 🛡️ 止盈止损：
 阶梯止盈15%：￥{stop_strategy['step_profit']['15%']:.2f}
 阶梯止盈25%：￥{stop_strategy['step_profit']['25%']:.2f}
 阶梯止盈40%：￥{stop_strategy['step_profit']['40%']:.2f}
 移动止损：￥{stop_strategy['trailing_stop']:.2f}
+时间止损：{stop_strategy['time_stop']}日
 紧急止损：￥{stop_strategy['emergency_stop']:.2f}
 
-🔍 信号验证：
+📍 关键价格位置：
+当前价格：￥{current_price:.2f}
+支撑位：￥{support_level:.2f}
+压力位：￥{resistance_level:.2f}
+20日高点：￥{band_info.get('high_20', 0):.2f}
+20日低点：￥{band_info.get('low_20', 0):.2f}
+价格区间：￥{band_info.get('low_20', 0):.2f} - ￥{band_info.get('high_20', 0):.2f}
+
+📈 主要技术指标：
+RSI：{latest['RSI']:.1f}
+MACD：{latest['MACD']:.3f}
+ADX：{latest['ADX']:.1f}
+ATR：{latest['ATR']:.3f}
+量比：{latest['Volume_Ratio']:.1f}
+布林带位置：{((latest['close'] - latest['BB_lower']) / (latest['BB_upper'] - latest['BB_lower']) * 100):.1f}%
+
+🔍 信号验证汇总：
+信号强度：{signal_result['signal_count']}/{signal_result['total_signals']} ({(signal_result['signal_count'] / signal_result['total_signals']) * 100:.0f}%)
+趋势方向：{'✅' if signal_result['signals']['trend_direction']['status'] else '❌'}
+动量强度：{'✅' if signal_result['signals']['momentum_strength']['status'] else '❌'}
+量能配合：{'✅' if signal_result['signals']['volume_cooperation']['status'] else '❌'}
+形态确认：{'✅' if signal_result['signals']['pattern_confirmation']['status'] else '❌'}
+市场环境：{'✅' if signal_result['signals']['market_environment']['status'] else '❌'}
+
+🔍 详细信号验证：
 """
                     
                     # 添加信号验证详情
@@ -657,22 +725,58 @@ def main():
                             'market_environment': '市场环境'
                         }
                         
+                        # 处理强度值显示
+                        strength_value = signal.get('strength', signal.get('value', signal.get('ratio', signal.get('net_inflow', signal.get('adx_value', None)))))
+                        if strength_value is not None:
+                            try:
+                                if isinstance(strength_value, (int, float)):
+                                    if key == 'momentum_strength':
+                                        strength_str = f"RSI: {strength_value:.1f}"
+                                    elif key == 'volume_cooperation':
+                                        strength_str = f"量比: {strength_value:.1f}"
+                                    elif key == 'fund_verification':
+                                        strength_str = f"净流入: {strength_value:,.0f}万"
+                                    elif key == 'market_environment':
+                                        strength_str = f"ADX: {strength_value:.1f}"
+                                    else:
+                                        strength_str = f"{strength_value:.2f}" if isinstance(strength_value, float) else str(strength_value)
+                                else:
+                                    strength_str = str(strength_value)
+                            except:
+                                strength_str = "未知"
+                        else:
+                            strength_str = "未知"
+                        
                         # 处理资金验证信号的特殊情况
                         if key == 'fund_verification' and not signal.get('data_available', True):
                             status = "⚠️ 数据不可用"
                         else:
-                            status = "✅ 符合" if signal['status'] else "❌ 不符合"
+                            status = "✅ 符合条件" if signal['status'] else "❌ 不符合条件"
                         
-                        text += f"{signal_names.get(key, key)}：{status} - {signal['description']}\n"
+                        text += f"{signal_names.get(key, key)}：{status} - {strength_str} - {signal['description']}\n"
                     
                     # 如果有持仓信息，添加持仓分析
                     if has_position and position_analysis:
+                        profit_loss_pct = position_analysis['profit_loss_pct']
+                        profit_loss = position_analysis['profit_loss']
+                        
+                        # 自定义盈亏显示
+                        if profit_loss_pct > 0:
+                            delta_display = f"+{profit_loss_pct:.2f}%"
+                        elif profit_loss_pct < 0:
+                            delta_display = f"{profit_loss_pct:.2f}%"
+                        else:
+                            delta_display = f"{profit_loss_pct:.2f}%"
+                        
                         text += f"""
 💼 持仓分析：
 持仓数量：{current_position:,}股
 成本价格：￥{cost_price:.2f}
+当前价格：￥{current_price:.2f}
 持仓状态：{position_analysis['position_status']}
+盈亏情况：{delta_display} (￥{profit_loss:,.0f})
 风险等级：{position_analysis['risk_level']}
+趋势强度：{position_analysis['trend_strength']}
 """
                     
                     text += """
@@ -686,9 +790,6 @@ def main():
                 # 生成分析文本
                 analysis_text = generate_analysis_text()
                 
-                # 显示复制功能
-                st.markdown("### 📋 复制分析结果")
-                
                 # 显示分析结果预览
                 st.text_area(
                     "分析结果预览",
@@ -698,22 +799,7 @@ def main():
                     help="请手动选择上方内容，然后按 Ctrl+C (Mac: Cmd+C) 复制到剪贴板"
                 )
                 
-                # 复制说明
-                st.info("""
-                💡 **复制说明：**
-                1. 点击上方文本框，全选内容（Ctrl+A 或 Cmd+A）
-                2. 复制内容（Ctrl+C 或 Cmd+C）
-                3. 粘贴到您需要的地方（Ctrl+V 或 Cmd+V）
-                
-                📋 **分析结果包含：**
-                - 基本信息（股票代码、名称、价格等）
-                - 波段分析结果
-                - 操作建议和仓位管理
-                - 止盈止损设置
-                - 六维信号验证详情
-                - 持仓分析（如有持仓）
-                - 风险提示
-                """)
+
                 
                 # 下载按钮（可选）
                 if st.button("💾 下载分析报告", type="secondary", use_container_width=True):

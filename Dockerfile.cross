@@ -1,0 +1,25 @@
+# 使用Ubuntu
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-dev \
+    build-essential \
+    wget \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY . .
+
+RUN pip3 install --upgrade pip
+RUN pip3 install -r requirements.txt
+RUN pip3 install pyinstaller
+
+RUN pyinstaller --onefile --console --name=BandMasterPro --distpath=dist --workpath=build --specpath=. --clean --add-data=src:src --hidden-import=streamlit --hidden-import=akshare --hidden-import=pandas --hidden-import=numpy --hidden-import=plotly --hidden-import=talib main.py
+
+VOLUME /app/dist

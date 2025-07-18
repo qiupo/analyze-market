@@ -32,8 +32,8 @@ goto MENU
 
 :PORTABLE
 echo.
-echo 🚀 开始创建便携式包...
-python portable_package.py
+echo �� 开始创建便携式包...
+python build\scripts\portable_package.py
 if %errorlevel% equ 0 (
     echo ✅ 便携式包创建完成!
 ) else (
@@ -45,7 +45,7 @@ goto MENU
 :PYINSTALLER
 echo.
 echo 🚀 开始PyInstaller打包...
-python build_package.py
+python build\scripts\build_package.py
 if %errorlevel% equ 0 (
     echo ✅ PyInstaller打包完成!
 ) else (
@@ -57,7 +57,7 @@ goto MENU
 :DOCKER
 echo.
 echo 🚀 开始Docker容器化...
-python docker_package.py
+python build\scripts\docker_package.py
 if %errorlevel% equ 0 (
     echo ✅ Docker配置文件创建完成!
     echo 💡 请运行 docker_build.bat 构建镜像
@@ -73,7 +73,7 @@ echo 🚀 直接运行源码...
 pip install -r requirements.txt
 if %errorlevel% equ 0 (
     echo ✅ 依赖安装完成，启动应用...
-    streamlit run app.py
+    python run.py
 ) else (
     echo ❌ 依赖安装失败
 )
@@ -83,11 +83,11 @@ goto MENU
 :GUIDE
 echo.
 echo 📋 打开部署指南...
-if exist "DEPLOYMENT_GUIDE.md" (
-    start DEPLOYMENT_GUIDE.md
+if exist "deploy\docs\DEPLOYMENT_GUIDE.md" (
+    start deploy\docs\DEPLOYMENT_GUIDE.md
 ) else (
     echo ❌ 部署指南文件不存在
-    echo 💡 请先运行 python deployment_guide.py 创建指南
+    echo 💡 请先运行 python deploy\scripts\deployment_guide.py 创建指南
 )
 pause
 goto MENU

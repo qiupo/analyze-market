@@ -91,7 +91,7 @@ deploy_traditional() {
     mkdir -p logs
     
     print_message "传统部署完成！"
-    print_message "启动命令: source venv/bin/activate && python start.py"
+    print_message "启动命令: source venv/bin/activate && python run.py"
 }
 
 
@@ -106,7 +106,7 @@ show_deployment_info() {
     echo "  局域网访问: http://$(hostname -I | awk '{print $1}'):8501"
     echo ""
     echo -e "${BLUE}管理命令:${NC}"
-    echo "  启动服务: source venv/bin/activate && python start.py"
+    echo "  启动服务: source venv/bin/activate && python run.py"
     echo "  停止服务: Ctrl+C"
     echo "  更新依赖: source venv/bin/activate && pip install -r requirements.txt --upgrade"
     echo ""
