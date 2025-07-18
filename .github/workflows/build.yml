@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [windows-latest, macos-latest]
         python-version: [3.9]
 
     steps:
@@ -22,30 +22,6 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    
-    - name: Install system dependencies (Linux)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential python3-dev wget pkg-config
-        
-        # 安装 TA-Lib 系统依赖
-        cd /tmp
-        wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
-        tar -xzf ta-lib-0.4.0-src.tar.gz
-        cd ta-lib/
-        ./configure --prefix=/usr/local
-        make
-        sudo make install
-        
-        # 更新动态链接库和pkg-config
-        sudo ldconfig
-        echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> $GITHUB_ENV
-        echo 'export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH' >> $GITHUB_ENV
-        
-        # 验证安装
-        ls -la /usr/local/lib/libta-lib*
-        pkg-config --libs ta-lib || echo "pkg-config not found for ta-lib"
     
     - name: Install system dependencies (macOS)
       if: matrix.os == 'macos-latest'
@@ -62,21 +38,11 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
     
-    - name: Install Python dependencies (Linux/macOS)
-      if: matrix.os != 'windows-latest'
+    - name: Install Python dependencies (macOS)
+      if: matrix.os == 'macos-latest'
       run: |
         python -m pip install --upgrade pip
         pip install numpy pandas streamlit plotly akshare
-        # 安装 TA-Lib 时设置正确的库路径 (Linux only)
-        if [ "$RUNNER_OS" = "Linux" ]; then
-          export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-          export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
-          echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-          echo "PKG_CONFIG_PATH: $PKG_CONFIG_PATH"
-          echo "Checking for ta-lib library:"
-          ls -la /usr/local/lib/libta-lib* || echo "Library not found in /usr/local/lib"
-          pkg-config --libs ta-lib || echo "pkg-config ta-lib failed"
-        fi
         pip install TA-Lib
         pip install -r requirements.txt
         pip install pyinstaller
@@ -399,16 +365,11 @@ jobs:
         echo. >> dist\README.md
         echo **免责声明**: 本工具仅供学习研究使用，不构成投资建议。投资有风险，决策需谨慎。 >> dist\README.md
     
-    - name: Create Linux/macOS README
-      if: matrix.os != 'windows-latest'
+    - name: Create macOS README
+      if: matrix.os == 'macos-latest'
       shell: bash
       run: |
-        if [ "$RUNNER_OS" = "macOS" ]; then
-          PLATFORM="macOS"
-        else
-          PLATFORM="Linux"
-        fi
-        echo "# BandMaster Pro - 智策波段交易助手 ($PLATFORM版本)" > dist/README.md
+        echo "# BandMaster Pro - 智策波段交易助手 (macOS版本)" > dist/README.md
         echo "" >> dist/README.md
         echo "## 📦 打包版本说明" >> dist/README.md
         echo "" >> dist/README.md
@@ -416,7 +377,7 @@ jobs:
         echo "" >> dist/README.md
         echo "## 🚀 快速启动" >> dist/README.md
         echo "" >> dist/README.md
-        echo "### $PLATFORM 系统" >> dist/README.md
+        echo "### macOS 系统" >> dist/README.md
         echo "1. 双击 \`./启动应用.sh\` 或直接运行 \`BandMasterPro\`" >> dist/README.md
         echo "2. 等待应用启动（首次启动可能需要10-30秒）" >> dist/README.md
         echo "3. 浏览器会自动打开应用界面" >> dist/README.md
@@ -492,7 +453,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          artifacts/BandMasterPro-ubuntu-latest/*
           artifacts/BandMasterPro-windows-latest/*
           artifacts/BandMasterPro-macos-latest/*
         tag_name: v${{ github.run_number }}
@@ -503,7 +463,6 @@ jobs:
           本次发布包含以下平台的可执行文件：
           
           - **Windows**: BandMasterPro.exe + 启动应用.bat
-          - **Linux**: BandMasterPro + 启动应用.sh  
           - **macOS**: BandMasterPro + 启动应用.sh
           
           ### 📦 使用说明
@@ -516,7 +475,6 @@ jobs:
           ### 🔧 系统要求
           
           - Windows 10/11 (x64)
-          - Ubuntu 18.04+ / CentOS 7+
           - macOS 10.14+ (Intel/Apple Silicon)
           
           ### ⚠️ 注意事项
