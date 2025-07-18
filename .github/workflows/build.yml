@@ -298,133 +298,133 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
-        echo # BandMaster Pro - 智策波段交易助手 (Windows版本) > dist\README.md
-        echo. >> dist\README.md
-        echo ## 📦 打包版本说明 >> dist\README.md
-        echo. >> dist\README.md
-        echo 这是 BandMaster Pro 的独立打包版本，无需安装 Python 环境即可直接运行。 >> dist\README.md
-        echo. >> dist\README.md
-        echo ## 🚀 快速启动 >> dist\README.md
-        echo. >> dist\README.md
-        echo ### Windows 系统 >> dist\README.md
-        echo 1. 双击 `启动应用.bat` 或直接运行 `BandMasterPro.exe` >> dist\README.md
-        echo 2. 等待应用启动（首次启动可能需要10-30秒） >> dist\README.md
-        echo 3. 浏览器会自动打开应用界面 >> dist\README.md
-        echo. >> dist\README.md
-        echo ## 📊 功能特色 >> dist\README.md
-        echo. >> dist\README.md
-        echo - **智能波段识别**: 多周期协同分析 >> dist\README.md
-        echo - **六维信号验证**: 趋势、动量、量能、资金、形态、环境 >> dist\README.md
-        echo - **精准买卖点**: 基于量化模型的决策矩阵 >> dist\README.md
-        echo - **动态仓位管理**: 底仓+加仓+补仓+T+0策略 >> dist\README.md
-        echo - **完整风控体系**: 止盈、止损、时间、紧急四重保护 >> dist\README.md
-        echo. >> dist\README.md
-        echo ## 🔧 使用说明 >> dist\README.md
-        echo. >> dist\README.md
-        echo 1. 在左侧输入6位股票代码（如：000001） >> dist\README.md
-        echo 2. 选择分析周期 >> dist\README.md
-        echo 3. 可选择设置持仓信息进行个性化分析 >> dist\README.md
-        echo 4. 点击"开始分析"查看完整报告 >> dist\README.md
-        echo. >> dist\README.md
-        echo ## ⚠️ 注意事项 >> dist\README.md
-        echo. >> dist\README.md
-        echo 1. **首次启动**: 可能需要较长时间，请耐心等待 >> dist\README.md
-        echo 2. **网络连接**: 需要网络连接获取股票数据 >> dist\README.md
-        echo 3. **防火墙**: 部分防火墙可能阻止应用启动，请添加信任 >> dist\README.md
-        echo 4. **端口占用**: 如果8501端口被占用，应用会自动寻找其他可用端口 >> dist\README.md
-        echo. >> dist\README.md
-        echo ## 🛠️ 故障排除 >> dist\README.md
-        echo. >> dist\README.md
-        echo ### 启动失败 >> dist\README.md
-        echo - 检查是否有足够的磁盘空间（至少100MB） >> dist\README.md
-        echo - 尝试以管理员权限运行 >> dist\README.md
-        echo - 临时关闭杀毒软件 >> dist\README.md
-        echo. >> dist\README.md
-        echo ### 浏览器未打开 >> dist\README.md
-        echo - 手动打开浏览器访问控制台显示的地址 >> dist\README.md
-        echo - 通常为: http://localhost:8501 >> dist\README.md
-        echo. >> dist\README.md
-        echo ### 数据获取失败 >> dist\README.md
-        echo - 检查网络连接 >> dist\README.md
-        echo - 确认股票代码格式正确（6位数字） >> dist\README.md
-        echo. >> dist\README.md
-        echo ## 📞 技术支持 >> dist\README.md
-        echo. >> dist\README.md
-        echo 如遇问题请检查： >> dist\README.md
-        echo 1. 系统兼容性 >> dist\README.md
-        echo 2. 网络连接状态 >> dist\README.md
-        echo 3. 防火墙设置 >> dist\README.md
-        echo 4. 磁盘空间 >> dist\README.md
-        echo. >> dist\README.md
-        echo --- >> dist\README.md
-        echo. >> dist\README.md
-        echo **免责声明**: 本工具仅供学习研究使用，不构成投资建议。投资有风险，决策需谨慎。 >> dist\README.md
+        echo # BandMaster Pro - 智策波段交易助手 (Windows版本) > dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo ## 📦 打包版本说明 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo 这是 BandMaster Pro 的独立打包版本，无需安装 Python 环境即可直接运行。 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo ## 🚀 快速启动 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo ### Windows 系统 >> dist\README-Windows.md
+        echo 1. 双击 `启动应用.bat` 或直接运行 `BandMasterPro.exe` >> dist\README-Windows.md
+        echo 2. 等待应用启动（首次启动可能需要10-30秒） >> dist\README-Windows.md
+        echo 3. 浏览器会自动打开应用界面 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo ## 📊 功能特色 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo - **智能波段识别**: 多周期协同分析 >> dist\README-Windows.md
+        echo - **六维信号验证**: 趋势、动量、量能、资金、形态、环境 >> dist\README-Windows.md
+        echo - **精准买卖点**: 基于量化模型的决策矩阵 >> dist\README-Windows.md
+        echo - **动态仓位管理**: 底仓+加仓+补仓+T+0策略 >> dist\README-Windows.md
+        echo - **完整风控体系**: 止盈、止损、时间、紧急四重保护 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo ## 🔧 使用说明 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo 1. 在左侧输入6位股票代码（如：000001） >> dist\README-Windows.md
+        echo 2. 选择分析周期 >> dist\README-Windows.md
+        echo 3. 可选择设置持仓信息进行个性化分析 >> dist\README-Windows.md
+        echo 4. 点击"开始分析"查看完整报告 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo ## ⚠️ 注意事项 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo 1. **首次启动**: 可能需要较长时间，请耐心等待 >> dist\README-Windows.md
+        echo 2. **网络连接**: 需要网络连接获取股票数据 >> dist\README-Windows.md
+        echo 3. **防火墙**: 部分防火墙可能阻止应用启动，请添加信任 >> dist\README-Windows.md
+        echo 4. **端口占用**: 如果8501端口被占用，应用会自动寻找其他可用端口 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo ## 🛠️ 故障排除 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo ### 启动失败 >> dist\README-Windows.md
+        echo - 检查是否有足够的磁盘空间（至少100MB） >> dist\README-Windows.md
+        echo - 尝试以管理员权限运行 >> dist\README-Windows.md
+        echo - 临时关闭杀毒软件 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo ### 浏览器未打开 >> dist\README-Windows.md
+        echo - 手动打开浏览器访问控制台显示的地址 >> dist\README-Windows.md
+        echo - 通常为: http://localhost:8501 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo ### 数据获取失败 >> dist\README-Windows.md
+        echo - 检查网络连接 >> dist\README-Windows.md
+        echo - 确认股票代码格式正确（6位数字） >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo ## 📞 技术支持 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo 如遇问题请检查： >> dist\README-Windows.md
+        echo 1. 系统兼容性 >> dist\README-Windows.md
+        echo 2. 网络连接状态 >> dist\README-Windows.md
+        echo 3. 防火墙设置 >> dist\README-Windows.md
+        echo 4. 磁盘空间 >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo --- >> dist\README-Windows.md
+        echo. >> dist\README-Windows.md
+        echo **免责声明**: 本工具仅供学习研究使用，不构成投资建议。投资有风险，决策需谨慎。 >> dist\README-Windows.md
     
     - name: Create macOS README
       if: matrix.os == 'macos-latest'
       shell: bash
       run: |
-        echo "# BandMaster Pro - 智策波段交易助手 (macOS版本)" > dist/README.md
-        echo "" >> dist/README.md
-        echo "## 📦 打包版本说明" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "这是 BandMaster Pro 的独立打包版本，无需安装 Python 环境即可直接运行。" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "## 🚀 快速启动" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "### macOS 系统" >> dist/README.md
-        echo "1. 双击 \`./启动应用.sh\` 或直接运行 \`BandMasterPro\`" >> dist/README.md
-        echo "2. 等待应用启动（首次启动可能需要10-30秒）" >> dist/README.md
-        echo "3. 浏览器会自动打开应用界面" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "## 📊 功能特色" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "- **智能波段识别**: 多周期协同分析" >> dist/README.md
-        echo "- **六维信号验证**: 趋势、动量、量能、资金、形态、环境" >> dist/README.md
-        echo "- **精准买卖点**: 基于量化模型的决策矩阵" >> dist/README.md
-        echo "- **动态仓位管理**: 底仓+加仓+补仓+T+0策略" >> dist/README.md
-        echo "- **完整风控体系**: 止盈、止损、时间、紧急四重保护" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "## 🔧 使用说明" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "1. 在左侧输入6位股票代码（如：000001）" >> dist/README.md
-        echo "2. 选择分析周期" >> dist/README.md
-        echo "3. 可选择设置持仓信息进行个性化分析" >> dist/README.md
-        echo "4. 点击"开始分析"查看完整报告" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "## ⚠️ 注意事项" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "1. **首次启动**: 可能需要较长时间，请耐心等待" >> dist/README.md
-        echo "2. **网络连接**: 需要网络连接获取股票数据" >> dist/README.md
-        echo "3. **防火墙**: 部分防火墙可能阻止应用启动，请添加信任" >> dist/README.md
-        echo "4. **端口占用**: 如果8501端口被占用，应用会自动寻找其他可用端口" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "## 🛠️ 故障排除" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "### 启动失败" >> dist/README.md
-        echo "- 检查是否有足够的磁盘空间（至少100MB）" >> dist/README.md
-        echo "- 尝试以管理员权限运行" >> dist/README.md
-        echo "- 临时关闭杀毒软件" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "### 浏览器未打开" >> dist/README.md
-        echo "- 手动打开浏览器访问控制台显示的地址" >> dist/README.md
-        echo "- 通常为: http://localhost:8501" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "### 数据获取失败" >> dist/README.md
-        echo "- 检查网络连接" >> dist/README.md
-        echo "- 确认股票代码格式正确（6位数字）" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "## 📞 技术支持" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "如遇问题请检查：" >> dist/README.md
-        echo "1. 系统兼容性" >> dist/README.md
-        echo "2. 网络连接状态" >> dist/README.md
-        echo "3. 防火墙设置" >> dist/README.md
-        echo "4. 磁盘空间" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "---" >> dist/README.md
-        echo "" >> dist/README.md
-        echo "**免责声明**: 本工具仅供学习研究使用，不构成投资建议。投资有风险，决策需谨慎。" >> dist/README.md
+        echo "# BandMaster Pro - 智策波段交易助手 (macOS版本)" > dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "## 📦 打包版本说明" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "这是 BandMaster Pro 的独立打包版本，无需安装 Python 环境即可直接运行。" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "## 🚀 快速启动" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "### macOS 系统" >> dist/README-macOS.md
+        echo "1. 双击 \`./启动应用.sh\` 或直接运行 \`BandMasterPro\`" >> dist/README-macOS.md
+        echo "2. 等待应用启动（首次启动可能需要10-30秒）" >> dist/README-macOS.md
+        echo "3. 浏览器会自动打开应用界面" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "## 📊 功能特色" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "- **智能波段识别**: 多周期协同分析" >> dist/README-macOS.md
+        echo "- **六维信号验证**: 趋势、动量、量能、资金、形态、环境" >> dist/README-macOS.md
+        echo "- **精准买卖点**: 基于量化模型的决策矩阵" >> dist/README-macOS.md
+        echo "- **动态仓位管理**: 底仓+加仓+补仓+T+0策略" >> dist/README-macOS.md
+        echo "- **完整风控体系**: 止盈、止损、时间、紧急四重保护" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "## 🔧 使用说明" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "1. 在左侧输入6位股票代码（如：000001）" >> dist/README-macOS.md
+        echo "2. 选择分析周期" >> dist/README-macOS.md
+        echo "3. 可选择设置持仓信息进行个性化分析" >> dist/README-macOS.md
+        echo "4. 点击"开始分析"查看完整报告" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "## ⚠️ 注意事项" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "1. **首次启动**: 可能需要较长时间，请耐心等待" >> dist/README-macOS.md
+        echo "2. **网络连接**: 需要网络连接获取股票数据" >> dist/README-macOS.md
+        echo "3. **防火墙**: 部分防火墙可能阻止应用启动，请添加信任" >> dist/README-macOS.md
+        echo "4. **端口占用**: 如果8501端口被占用，应用会自动寻找其他可用端口" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "## 🛠️ 故障排除" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "### 启动失败" >> dist/README-macOS.md
+        echo "- 检查是否有足够的磁盘空间（至少100MB）" >> dist/README-macOS.md
+        echo "- 尝试以管理员权限运行" >> dist/README-macOS.md
+        echo "- 临时关闭杀毒软件" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "### 浏览器未打开" >> dist/README-macOS.md
+        echo "- 手动打开浏览器访问控制台显示的地址" >> dist/README-macOS.md
+        echo "- 通常为: http://localhost:8501" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "### 数据获取失败" >> dist/README-macOS.md
+        echo "- 检查网络连接" >> dist/README-macOS.md
+        echo "- 确认股票代码格式正确（6位数字）" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "## 📞 技术支持" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "如遇问题请检查：" >> dist/README-macOS.md
+        echo "1. 系统兼容性" >> dist/README-macOS.md
+        echo "2. 网络连接状态" >> dist/README-macOS.md
+        echo "3. 防火墙设置" >> dist/README-macOS.md
+        echo "4. 磁盘空间" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "---" >> dist/README-macOS.md
+        echo "" >> dist/README-macOS.md
+        echo "**免责声明**: 本工具仅供学习研究使用，不构成投资建议。投资有风险，决策需谨慎。" >> dist/README-macOS.md
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
@@ -453,10 +453,10 @@ jobs:
         files: |
           artifacts/BandMasterPro-windows-latest/BandMasterPro.exe
           artifacts/BandMasterPro-windows-latest/启动应用.bat
-          artifacts/BandMasterPro-windows-latest/README.md
+          artifacts/BandMasterPro-windows-latest/README-Windows.md
           artifacts/BandMasterPro-macos-latest/BandMasterPro
           artifacts/BandMasterPro-macos-latest/启动应用.sh
-          artifacts/BandMasterPro-macos-latest/README.md
+          artifacts/BandMasterPro-macos-latest/README-macOS.md
         tag_name: v${{ github.run_number }}
         name: Release v${{ github.run_number }}
         body: |
@@ -464,8 +464,8 @@ jobs:
           
           本次发布包含以下平台的可执行文件：
           
-          - **Windows**: BandMasterPro.exe + 启动应用.bat
-          - **macOS**: BandMasterPro + 启动应用.sh
+          - **Windows**: BandMasterPro.exe + 启动应用.bat + README-Windows.md
+          - **macOS**: BandMasterPro + 启动应用.sh + README-macOS.md
           
           ### 📦 使用说明
           
