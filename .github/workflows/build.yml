@@ -27,19 +27,25 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential python3-dev wget
+        sudo apt-get install -y build-essential python3-dev wget pkg-config
         
         # 安装 TA-Lib 系统依赖
         cd /tmp
         wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
         tar -xzf ta-lib-0.4.0-src.tar.gz
         cd ta-lib/
-        ./configure --prefix=/usr
+        ./configure --prefix=/usr/local
         make
         sudo make install
         
-        # 更新动态链接库
+        # 更新动态链接库和pkg-config
         sudo ldconfig
+        echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> $GITHUB_ENV
+        echo 'export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH' >> $GITHUB_ENV
+        
+        # 验证安装
+        ls -la /usr/local/lib/libta-lib*
+        pkg-config --libs ta-lib || echo "pkg-config not found for ta-lib"
     
     - name: Install system dependencies (macOS)
       if: matrix.os == 'macos-latest'
@@ -50,6 +56,16 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install numpy pandas streamlit plotly akshare
+        # 安装 TA-Lib 时设置正确的库路径
+        if [ "$RUNNER_OS" = "Linux" ]; then
+          export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+          export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+          echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+          echo "PKG_CONFIG_PATH: $PKG_CONFIG_PATH"
+          echo "Checking for ta-lib library:"
+          ls -la /usr/local/lib/libta-lib* || echo "Library not found in /usr/local/lib"
+          pkg-config --libs ta-lib || echo "pkg-config ta-lib failed"
+        fi
         pip install TA-Lib
         pip install -r requirements.txt
         pip install pyinstaller
