@@ -46,7 +46,202 @@ jobs:
         pip install TA-Lib
         pip install -r requirements.txt
         pip install pyinstaller
-
+    
+    - name: Create main entry file (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
+        echo #!/usr/bin/env python3 > main.py
+        echo. >> main.py
+        echo # BandMaster Pro Main Entry File >> main.py
+        echo. >> main.py
+        echo import os >> main.py
+        echo import sys >> main.py
+        echo import subprocess >> main.py
+        echo import webbrowser >> main.py
+        echo import time >> main.py
+        echo import socket >> main.py
+        echo import signal >> main.py
+        echo from pathlib import Path >> main.py
+        echo. >> main.py
+        echo def find_available_port(start_port=8501, max_port=8600): >> main.py
+        echo     # Find available port >> main.py
+        echo     for port in range(start_port, max_port): >> main.py
+        echo         try: >> main.py
+        echo             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s: >> main.py
+        echo                 s.bind(('localhost', port)) >> main.py
+        echo                 return port >> main.py
+        echo         except OSError: >> main.py
+        echo             continue >> main.py
+        echo     return start_port >> main.py
+        echo. >> main.py
+        echo def signal_handler(signum, frame): >> main.py
+        echo     # Signal handler >> main.py
+        echo     global streamlit_process >> main.py
+        echo     if streamlit_process: >> main.py
+        echo         print("Stopping application...") >> main.py
+        echo         streamlit_process.terminate() >> main.py
+        echo         try: >> main.py
+        echo             streamlit_process.wait(timeout=5) >> main.py
+        echo         except subprocess.TimeoutExpired: >> main.py
+        echo             streamlit_process.kill() >> main.py
+        echo         print("Application stopped") >> main.py
+        echo     sys.exit(0) >> main.py
+        echo. >> main.py
+        echo def main(): >> main.py
+        echo     # Main function >> main.py
+        echo     # Register signal handlers >> main.py
+        echo     signal.signal(signal.SIGINT, signal_handler) >> main.py
+        echo     signal.signal(signal.SIGTERM, signal_handler) >> main.py
+        echo     print("=" * 60) >> main.py
+        echo     print("BandMaster Pro - Smart Trading Assistant") >> main.py
+        echo     print("=" * 60) >> main.py
+        echo     port = find_available_port() >> main.py
+        echo     print("Starting service...") >> main.py
+        echo     print("Access URL: http://localhost:" + str(port)) >> main.py
+        echo     print("=" * 60) >> main.py
+        echo     global streamlit_process >> main.py
+        echo     streamlit_process = None >> main.py
+        echo     if getattr(sys, "frozen", False): >> main.py
+        echo         base_path = sys._MEIPASS >> main.py
+        echo         app_path = os.path.join(base_path, "src", "app.py") >> main.py
+        echo     else: >> main.py
+        echo         app_path = os.path.join("src", "app.py") >> main.py
+        echo     try: >> main.py
+        echo         cmd = [sys.executable, "-m", "streamlit", "run", app_path, "--server.port", str(port), "--server.headless", "true", "--browser.gatherUsageStats", "false"] >> main.py
+        echo         print("Starting application...") >> main.py
+        echo         process = subprocess.Popen(cmd) >> main.py
+        echo         streamlit_process = process >> main.py
+        echo         time.sleep(3) >> main.py
+        echo         webbrowser.open("http://localhost:" + str(port)) >> main.py
+        echo         print("Application started") >> main.py
+        echo         print("Press Ctrl+C to stop") >> main.py
+        echo         process.wait() >> main.py
+        echo     except KeyboardInterrupt: >> main.py
+        echo         print("Stopping application...") >> main.py
+        echo         process.terminate() >> main.py
+        echo         try: >> main.py
+        echo             process.wait(timeout=5) >> main.py
+        echo         except subprocess.TimeoutExpired: >> main.py
+        echo             process.kill() >> main.py
+        echo         print("Application stopped") >> main.py
+        echo     except SystemExit: >> main.py
+        echo         print("Application exiting...") >> main.py
+        echo         process.terminate() >> main.py
+        echo         try: >> main.py
+        echo             process.wait(timeout=5) >> main.py
+        echo         except subprocess.TimeoutExpired: >> main.py
+        echo             process.kill() >> main.py
+        echo     except Exception as e: >> main.py
+        echo         print("Startup failed: " + str(e)) >> main.py
+        echo         print("Press Enter to exit...") >> main.py
+        echo         try: >> main.py
+        echo             input() >> main.py
+        echo         except: >> main.py
+        echo             pass >> main.py
+        echo. >> main.py
+        echo if __name__ == "__main__": >> main.py
+        echo     main() >> main.py
+    
+    - name: Create main entry file (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      run: |
+        echo '#!/usr/bin/env python3' > main.py
+        echo '"""' >> main.py
+        echo 'BandMaster Pro Main Entry File' >> main.py
+        echo '"""' >> main.py
+        echo '' >> main.py
+        echo 'import os' >> main.py
+        echo 'import sys' >> main.py
+        echo 'import subprocess' >> main.py
+        echo 'import webbrowser' >> main.py
+        echo 'import time' >> main.py
+        echo 'import socket' >> main.py
+        echo 'import signal' >> main.py
+        echo 'from pathlib import Path' >> main.py
+        echo '' >> main.py
+        echo 'def find_available_port(start_port=8501, max_port=8600):' >> main.py
+        echo '    """查找可用端口"""' >> main.py
+        echo '    for port in range(start_port, max_port):' >> main.py
+        echo '        try:' >> main.py
+        echo '            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:' >> main.py
+        echo '                s.bind(("localhost", port))' >> main.py
+        echo '                return port' >> main.py
+        echo '        except OSError:' >> main.py
+        echo '            continue' >> main.py
+        echo '    return start_port' >> main.py
+        echo '' >> main.py
+        echo 'def signal_handler(signum, frame):' >> main.py
+        echo '    """信号处理器"""' >> main.py
+        echo '    global streamlit_process' >> main.py
+        echo '    if streamlit_process:' >> main.py
+        echo '        print("\n🛑 收到退出信号，正在停止应用...")' >> main.py
+        echo '        streamlit_process.terminate()' >> main.py
+        echo '        try:' >> main.py
+        echo '            streamlit_process.wait(timeout=5)' >> main.py
+        echo '        except subprocess.TimeoutExpired:' >> main.py
+        echo '            streamlit_process.kill()' >> main.py
+        echo '        print("✅ 应用已停止")' >> main.py
+        echo '    sys.exit(0)' >> main.py
+        echo '' >> main.py
+        echo 'def main():' >> main.py
+        echo '    """主函数"""' >> main.py
+        echo '    # 注册信号处理器' >> main.py
+        echo '    signal.signal(signal.SIGINT, signal_handler)' >> main.py
+        echo '    signal.signal(signal.SIGTERM, signal_handler)' >> main.py
+        echo '    print("=" * 60)' >> main.py
+        echo '    print("🚀 BandMaster Pro - 智策波段交易助手")' >> main.py
+        echo '    print("=" * 60)' >> main.py
+        echo '    port = find_available_port()' >> main.py
+        echo '    print(f"📡 启动服务...")' >> main.py
+        echo '    print(f"🌐 访问地址: http://localhost:{port}")' >> main.py
+        echo '    print("=" * 60)' >> main.py
+        echo '    global streamlit_process' >> main.py
+        echo '    streamlit_process = None' >> main.py
+        echo '    if getattr(sys, "frozen", False):' >> main.py
+        echo '        base_path = sys._MEIPASS' >> main.py
+        echo '        app_path = os.path.join(base_path, "src", "app.py")' >> main.py
+        echo '    else:' >> main.py
+        echo '        app_path = os.path.join("src", "app.py")' >> main.py
+        echo '    try:' >> main.py
+        echo '        cmd = [sys.executable, "-m", "streamlit", "run", app_path,' >> main.py
+        echo '               "--server.port", str(port),' >> main.py
+        echo '               "--server.headless", "true",' >> main.py
+        echo '               "--browser.gatherUsageStats", "false"]' >> main.py
+        echo '        print("⏳ 正在启动应用...")' >> main.py
+        echo '        process = subprocess.Popen(cmd)' >> main.py
+        echo '        streamlit_process = process' >> main.py
+        echo '        time.sleep(3)' >> main.py
+        echo '        webbrowser.open(f"http://localhost:{port}")' >> main.py
+        echo '        print("✅ 应用已启动")' >> main.py
+        echo '        print("按 Ctrl+C 停止应用")' >> main.py
+        echo '        process.wait()' >> main.py
+        echo '    except KeyboardInterrupt:' >> main.py
+        echo '        print("🛑 正在停止应用...")' >> main.py
+        echo '        process.terminate()' >> main.py
+        echo '        try:' >> main.py
+        echo '            process.wait(timeout=5)' >> main.py
+        echo '        except subprocess.TimeoutExpired:' >> main.py
+        echo '            process.kill()' >> main.py
+        echo '        print("✅ 应用已停止")' >> main.py
+        echo '    except SystemExit:' >> main.py
+        echo '        print("🛑 应用退出...")' >> main.py
+        echo '        process.terminate()' >> main.py
+        echo '        try:' >> main.py
+        echo '            process.wait(timeout=5)' >> main.py
+        echo '        except subprocess.TimeoutExpired:' >> main.py
+        echo '            process.kill()' >> main.py
+        echo '    except Exception as e:' >> main.py
+        echo '        print(f"❌ 启动失败: {e}")' >> main.py
+        echo '        print("按回车键退出...")' >> main.py
+        echo '        try:' >> main.py
+        echo '            input()' >> main.py
+        echo '        except:' >> main.py
+        echo '            pass' >> main.py
+        echo '' >> main.py
+        echo 'if __name__ == "__main__":' >> main.py
+        echo '    main()' >> main.py
+    
     - name: Build with PyInstaller (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
