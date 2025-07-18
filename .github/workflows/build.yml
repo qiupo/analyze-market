@@ -119,6 +119,7 @@ jobs:
     
     - name: Build with PyInstaller (Windows)
       if: matrix.os == 'windows-latest'
+      shell: cmd
       run: pyinstaller --onefile --console --name=BandMasterPro --distpath=dist --workpath=build --specpath=. --clean --add-data=src;src --hidden-import=streamlit --hidden-import=akshare --hidden-import=pandas --hidden-import=numpy --hidden-import=plotly --hidden-import=talib main.py
     
     - name: Build with PyInstaller (Linux/macOS)
