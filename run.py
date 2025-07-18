@@ -23,14 +23,29 @@ def find_available_port(start_port=8501, max_port=8600):
             continue
     return start_port
 
-def check_port_available(port):
-    """检查端口是否可用"""
+def check_port_in_use(port):
+    """检查端口是否被占用"""
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind(('localhost', port))
+            s.connect(('localhost', port))
             return True
     except OSError:
         return False
+
+def wait_for_server(port, process, timeout=30):
+    """等待服务器启动"""
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        # 检查进程是否还在运行
+        if process.poll() is not None:
+            # 进程已退出，启动失败
+            return False
+        
+        # 检查端口是否被占用
+        if check_port_in_use(port):
+            return True
+        time.sleep(1)
+    return False
 
 def signal_handler(signum, frame):
     """信号处理器"""
@@ -104,31 +119,8 @@ def main():
         streamlit_process = process
         
         # 等待应用启动
-        max_wait_time = 30  # 最多等待30秒
-        start_time = time.time()
-        app_started = False
-        
-        while time.time() - start_time < max_wait_time:
-            # 检查进程是否还在运行
-            if process.poll() is not None:
-                # 进程已退出
-                stdout, stderr = process.communicate()
-                print(f"❌ 应用启动失败")
-                if stdout:
-                    print(f"标准输出: {stdout}")
-                if stderr:
-                    print(f"错误输出: {stderr}")
-                break
-            
-            # 检查端口是否被占用（表示应用已启动）
-            if check_port_available(port):
-                time.sleep(1)
-                continue
-            else:
-                # 端口被占用，应用可能已启动
-                time.sleep(2)  # 再等2秒确保完全启动
-                app_started = True
-                break
+        print("⏳ 等待服务器启动...")
+        app_started = wait_for_server(port, process, timeout=30)
         
         if not app_started:
             print("❌ 应用启动超时")
