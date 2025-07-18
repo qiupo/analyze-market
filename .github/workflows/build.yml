@@ -53,9 +53,7 @@ jobs:
       run: |
         echo #!/usr/bin/env python3 > main.py
         echo. >> main.py
-        echo """ >> main.py
-        echo BandMaster Pro Main Entry File >> main.py
-        echo """ >> main.py
+        echo # BandMaster Pro Main Entry File >> main.py
         echo. >> main.py
         echo import os >> main.py
         echo import sys >> main.py
@@ -67,7 +65,7 @@ jobs:
         echo from pathlib import Path >> main.py
         echo. >> main.py
         echo def find_available_port(start_port=8501, max_port=8600): >> main.py
-        echo     """Find available port""" >> main.py
+        echo     # Find available port >> main.py
         echo     for port in range(start_port, max_port): >> main.py
         echo         try: >> main.py
         echo             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s: >> main.py
@@ -78,10 +76,10 @@ jobs:
         echo     return start_port >> main.py
         echo. >> main.py
         echo def signal_handler(signum, frame): >> main.py
-        echo     """Signal handler""" >> main.py
+        echo     # Signal handler >> main.py
         echo     global streamlit_process >> main.py
         echo     if streamlit_process: >> main.py
-        echo         print("\nStopping application...") >> main.py
+        echo         print("Stopping application...") >> main.py
         echo         streamlit_process.terminate() >> main.py
         echo         try: >> main.py
         echo             streamlit_process.wait(timeout=5) >> main.py
@@ -91,7 +89,7 @@ jobs:
         echo     sys.exit(0) >> main.py
         echo. >> main.py
         echo def main(): >> main.py
-        echo     """Main function""" >> main.py
+        echo     # Main function >> main.py
         echo     # Register signal handlers >> main.py
         echo     signal.signal(signal.SIGINT, signal_handler) >> main.py
         echo     signal.signal(signal.SIGTERM, signal_handler) >> main.py
@@ -99,8 +97,8 @@ jobs:
         echo     print("BandMaster Pro - Smart Trading Assistant") >> main.py
         echo     print("=" * 60) >> main.py
         echo     port = find_available_port() >> main.py
-        echo     print(f"Starting service...") >> main.py
-        echo     print(f"Access URL: http://localhost:{port}") >> main.py
+        echo     print("Starting service...") >> main.py
+        echo     print("Access URL: http://localhost:" + str(port)) >> main.py
         echo     print("=" * 60) >> main.py
         echo     global streamlit_process >> main.py
         echo     streamlit_process = None >> main.py
@@ -110,15 +108,12 @@ jobs:
         echo     else: >> main.py
         echo         app_path = os.path.join("src", "app.py") >> main.py
         echo     try: >> main.py
-        echo         cmd = [sys.executable, "-m", "streamlit", "run", app_path, >> main.py
-        echo                "--server.port", str(port), >> main.py
-        echo                "--server.headless", "true", >> main.py
-        echo                "--browser.gatherUsageStats", "false"] >> main.py
+        echo         cmd = [sys.executable, "-m", "streamlit", "run", app_path, "--server.port", str(port), "--server.headless", "true", "--browser.gatherUsageStats", "false"] >> main.py
         echo         print("Starting application...") >> main.py
         echo         process = subprocess.Popen(cmd) >> main.py
         echo         streamlit_process = process >> main.py
         echo         time.sleep(3) >> main.py
-        echo         webbrowser.open(f"http://localhost:{port}") >> main.py
+        echo         webbrowser.open("http://localhost:" + str(port)) >> main.py
         echo         print("Application started") >> main.py
         echo         print("Press Ctrl+C to stop") >> main.py
         echo         process.wait() >> main.py
@@ -138,7 +133,7 @@ jobs:
         echo         except subprocess.TimeoutExpired: >> main.py
         echo             process.kill() >> main.py
         echo     except Exception as e: >> main.py
-        echo         print(f"Startup failed: {e}") >> main.py
+        echo         print("Startup failed: " + str(e)) >> main.py
         echo         print("Press Enter to exit...") >> main.py
         echo         try: >> main.py
         echo             input() >> main.py
