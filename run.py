@@ -66,113 +66,130 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     
-    print("=" * 60)
-    print("🚀 BandMaster Pro - 智策波段交易助手 (开发模式)")
-    print("=" * 60)
-    
-    # 获取可用端口
-    port = find_available_port()
-    
-    print(f"📡 启动服务...")
-    print(f"🌐 访问地址: http://localhost:{port}")
-    print("=" * 60)
-    
-    # 全局变量存储进程
-    global streamlit_process
-    streamlit_process = None
-    
-    # 应用文件路径
-    app_path = os.path.join('src', 'app.py')
-    
-    # 检查文件是否存在
-    if not os.path.exists(app_path):
-        print(f"❌ 应用文件不存在: {app_path}")
-        print("请确保在项目根目录中运行此脚本")
-        print("按回车键退出...")
+    while True:
         try:
-            input()
-        except:
-            pass
-        return
-    
-    try:
-        # 启动Streamlit
-        cmd = [
-            sys.executable, '-m', 'streamlit', 'run', app_path,
-            '--server.port', str(port),
-            '--server.headless', 'false',
-            '--browser.gatherUsageStats', 'false',
-            '--server.runOnSave', 'true'
-        ]
-        
-        print("⏳ 正在启动应用...")
-        
-        # 使用subprocess.Popen启动进程
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1,
-            universal_newlines=True
-        )
-        streamlit_process = process
-        
-        # 等待应用启动
-        print("⏳ 等待服务器启动...")
-        app_started = wait_for_server(port, process, timeout=30)
-        
-        if not app_started:
-            print("❌ 应用启动超时")
-            if process.poll() is None:
+            print("=" * 60)
+            print("🚀 BandMaster Pro - 智策波段交易助手 (开发模式)")
+            print("=" * 60)
+            
+            # 获取可用端口
+            port = find_available_port()
+            
+            print(f"📡 启动服务...")
+            print(f"🌐 访问地址: http://localhost:{port}")
+            print("=" * 60)
+            
+            # 全局变量存储进程
+            global streamlit_process
+            streamlit_process = None
+            
+            # 应用文件路径
+            app_path = os.path.join('src', 'app.py')
+            
+            # 检查文件是否存在
+            if not os.path.exists(app_path):
+                print(f"❌ 应用文件不存在: {app_path}")
+                print("请确保在项目根目录中运行此脚本")
+                print("按回车键退出...")
+                try:
+                    input()
+                except:
+                    pass
+                return
+            
+            # 启动Streamlit
+            cmd = [
+                sys.executable, '-m', 'streamlit', 'run', app_path,
+                '--server.port', str(port),
+                '--server.headless', 'false',
+                '--browser.gatherUsageStats', 'false',
+                '--server.runOnSave', 'true'
+            ]
+            
+            print("⏳ 正在启动应用...")
+            
+            # 使用subprocess.Popen启动进程
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+                universal_newlines=True
+            )
+            streamlit_process = process
+            
+            # 等待应用启动
+            print("⏳ 等待服务器启动...")
+            app_started = wait_for_server(port, process, timeout=30)
+            
+            if not app_started:
+                print("❌ 应用启动超时")
+                if process.poll() is None:
+                    process.terminate()
+                    try:
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                print("按回车键重新启动，或按Ctrl+C退出...")
+                try:
+                    input()
+                    continue
+                except KeyboardInterrupt:
+                    print("\n✅ 应用已退出")
+                    break
+            
+            print("✅ 应用已启动")
+            print("\n按 Ctrl+C 停止应用")
+            
+            # 打开浏览器
+            try:
+                webbrowser.open(f'http://localhost:{port}')
+            except Exception as e:
+                print(f"⚠️ 无法自动打开浏览器: {e}")
+                print(f"请手动访问: http://localhost:{port}")
+            
+            # 等待进程结束
+            try:
+                process.wait()
+                # Streamlit进程已退出，但主进程不要退出
+                print("\n🔄 Streamlit进程已退出")
+                print("按回车键重新启动，或按Ctrl+C退出...")
+                try:
+                    input()
+                    # 重新启动
+                    print("🔄 重新启动应用...")
+                    continue
+                except KeyboardInterrupt:
+                    print("\n✅ 应用已退出")
+                    break
+            except KeyboardInterrupt:
+                print("\n🛑 正在停止应用...")
                 process.terminate()
                 try:
                     process.wait(timeout=5)
                 except subprocess.TimeoutExpired:
                     process.kill()
-            print("按回车键退出...")
+                print("✅ 应用已停止")
+                break
+            except SystemExit:
+                print("\n🛑 应用退出...")
+                process.terminate()
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                break
+                
+        except Exception as e:
+            print(f"❌ 启动失败: {e}")
+            print("按回车键重新启动，或按Ctrl+C退出...")
             try:
                 input()
-            except:
-                pass
-            return
-        
-        print("✅ 应用已启动")
-        print("\n按 Ctrl+C 停止应用")
-        
-        # 打开浏览器
-        try:
-            webbrowser.open(f'http://localhost:{port}')
-        except Exception as e:
-            print(f"⚠️ 无法自动打开浏览器: {e}")
-            print(f"请手动访问: http://localhost:{port}")
-        
-        # 等待进程结束
-        try:
-            process.wait()
-        except KeyboardInterrupt:
-            print("\n🛑 正在停止应用...")
-            process.terminate()
-            try:
-                process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                process.kill()
-            print("✅ 应用已停止")
-        except SystemExit:
-            print("\n🛑 应用退出...")
-            process.terminate()
-            try:
-                process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                process.kill()
-            
-    except Exception as e:
-        print(f"❌ 启动失败: {e}")
-        print("按回车键退出...")
-        try:
-            input()
-        except:
-            pass
+                continue
+            except KeyboardInterrupt:
+                print("\n✅ 应用已退出")
+                break
 
 if __name__ == "__main__":
     main() 
